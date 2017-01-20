@@ -1,0 +1,12 @@
+(sleep 5 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 10 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 15 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 20 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 25 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 30 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 35 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 40 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 45 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 50 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 55 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
+(sleep 60 && sudo /usr/bin/Rscript /srv/shiny-server/Campaign/pullTwitts.R) &
