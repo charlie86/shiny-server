@@ -58,7 +58,7 @@ shinyServer(function(input, output, session) {
                     facet_wrap(~album_name) +
                     ggtitle(label = 'Radiohead Sentiment by Album') +
                     theme_tufte()
-                
+                pdf(NULL)
                 ggplotly(test, tooltip = c('x', 'y', 'text'))
             })
         }
