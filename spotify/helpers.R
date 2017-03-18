@@ -56,7 +56,7 @@ get_tracks <- function(artist_info, album_info) {
     
     # You'll have to set up a dev account with Spotify here:
     client_id <- 'c857dcec62a74825985e4749ef531abe'
-    client_secret <- '46cb88674ec641a0ab124aa190060b70'
+    client_secret <- '54af922e8c7a44f28eb339adb0f23656'
     access_token <- POST('https://accounts.spotify.com/api/token',
                          accept_json(), authenticate(client_id, client_secret),
                          body = list(grant_type='client_credentials'),
