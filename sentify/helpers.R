@@ -37,10 +37,10 @@ get_albums <- function(artist) {
         }
         
     }) %>% filter(!duplicated(tolower(album_name))) %>%
-        mutate(base_album_name = str_replace_all(tolower(album_name), ' \\(.*(deluxe|international|anniversary|version|edition|remastered|live).*\\)', ''),
-               base_album_name = str_replace_all(base_album_name, ' \\[.*(deluxe|international|anniversary|version|edition|remastered|live).*\\]', ''),
-               base_album_name = str_replace_all(base_album_name, ':.*(deluxe|international|anniversary|version|edition|remastered|live).*', ''),
-               base_album_name = str_replace_all(base_album_name, ' - .*(deluxe|international|anniversary|version|edition|remastered|live).*', '')) %>% 
+        mutate(base_album_name = str_replace_all(tolower(album_name), ' \\(.*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*\\)', ''),
+               base_album_name = str_replace_all(base_album_name, ' \\[.*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*\\]', ''),
+               base_album_name = str_replace_all(base_album_name, ':.*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*', ''),
+               base_album_name = str_replace_all(base_album_name, ' - .*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*', '')) %>% 
         group_by(base_album_name) %>% 
         filter(album_release_year == min(album_release_year)) %>% 
         mutate(base_album = tolower(album_name) == base_album_name,
