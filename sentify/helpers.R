@@ -20,14 +20,16 @@ get_albums <- function(artist) {
     
     albums <- GET(paste0('https://api.spotify.com/v1/artists/', artist,'/albums'), query = list(limit = 50)) %>% content
     
-    map_df(1:length(albums$items), function(x) {
+    df <- map_df(1:length(albums$items), function(x) {
         tmp <- albums$items[[x]]
+        
+        Sys.sleep(.1)
         
         # Make sure the album_type is not "single"
         if (tmp$album_type == 'album' & gsub('spotify:artist:', '', tmp$artists[[1]]$uri) == artist) {
             data.frame(album_uri = tmp$uri %>% gsub('spotify:album:', '', .),
                        album_name = gsub('\'', '', tmp$name),
-                       album_img = albums$items[[x]]$images[[1]]$url,
+                       album_img = ifelse(length(albums$items[[x]]$images) > 0, albums$items[[x]]$images[[1]]$url, NA),
                        stringsAsFactors = F) %>%
                 mutate(album_release_date = GET(paste0('https://api.spotify.com/v1/albums/', tmp$uri %>% gsub('spotify:album:', '', .))) %>% content %>% .$release_date,
                        album_release_year = as.Date(ifelse(nchar(album_release_date) == 4, as.Date(paste0(year(as.Date(album_release_date, '%Y')), '-01-01')), as.Date(album_release_date, '%Y-%m-%d')), origin = '1970-01-01')
@@ -36,21 +38,27 @@ get_albums <- function(artist) {
             NULL
         }
         
-    }) %>% filter(!duplicated(tolower(album_name))) %>%
-        mutate(base_album_name = str_replace_all(tolower(album_name), ' \\(.*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*\\)', ''),
-               base_album_name = str_replace_all(base_album_name, ' \\[.*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*\\]', ''),
-               base_album_name = str_replace_all(base_album_name, ':.*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*', ''),
-               base_album_name = str_replace_all(base_album_name, ' - .*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*', '')) %>% 
-        group_by(base_album_name) %>% 
-        filter(album_release_year == min(album_release_year)) %>% 
-        mutate(base_album = tolower(album_name) == base_album_name,
-               num_albums = n(),
-               num_base_albums = sum(base_album)) %>% 
-        filter((num_base_albums == 1 & base_album == 1) | ((num_base_albums == 0 | num_base_albums > 1) & row_number() == 1)) %>%
-        ungroup %>% 
-        # Sometimes there are multiple versions (just with different capitalizations) of the same album
-        arrange(album_release_year) %>%
-        mutate(album_rank = row_number())
+    })
+    
+    if (nrow(df) > 0) {
+        df <- df %>% filter(!duplicated(tolower(album_name))) %>%
+            mutate(base_album_name = str_replace_all(tolower(album_name), ' \\(.*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*\\)', ''),
+                   base_album_name = str_replace_all(base_album_name, ' \\[.*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*\\]', ''),
+                   base_album_name = str_replace_all(base_album_name, ':.*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*', ''),
+                   base_album_name = str_replace_all(base_album_name, ' - .*(deluxe|international|anniversary|version|edition|remaster|live|mono|stereo).*', '')) %>% 
+            group_by(base_album_name) %>% 
+            filter(album_release_year == min(album_release_year)) %>% 
+            mutate(base_album = tolower(album_name) == base_album_name,
+                   num_albums = n(),
+                   num_base_albums = sum(base_album)) %>% 
+            filter((num_base_albums == 1 & base_album == 1) | ((num_base_albums == 0 | num_base_albums > 1) & row_number() == 1)) %>%
+            ungroup %>% 
+            # Sometimes there are multiple versions (just with different capitalizations) of the same album
+            arrange(album_release_year) %>%
+            mutate(album_rank = row_number())
+    }
+    
+    return(df)
 }
 
 get_tracks <- function(artist_info, album_info) {
@@ -68,16 +76,29 @@ get_tracks <- function(artist_info, album_info) {
             content %>% 
             .$items 
         
+        Sys.sleep(.1)
+        
         uris <- map(1:length(tracks), function(z) {
             gsub('spotify:track:', '', tracks[z][[1]]$uri)
         }) %>% unlist %>% paste0(collapse=',')
         
         res <- GET(paste0('https://api.spotify.com/v1/audio-features/?ids=', uris),
                    query = list(access_token = access_token)) %>% content %>% .$audio_features
-        df <- unlist(res) %>% 
-            matrix(nrow = length(res), byrow = T) %>% 
-            as.data.frame(stringsAsFactors = F)
-        names(df) <- names(res[[1]])
+        
+        audio_features <- c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'id', 'duration_ms', 'time_signature')
+        
+        df <- map_df(1:length(res), function(i) {
+            tmp <- map(audio_features, function(j) {
+                ifelse(is.null(res[[i]][[j]]), NA, res[[i]][[j]])
+            })
+            names(tmp) <- audio_features
+            tmp
+        })
+        
+        # df <- unlist(res) %>% 
+        #     matrix(nrow = length(res), byrow = T) %>% 
+        #     as.data.frame(stringsAsFactors = F)
+        # names(df) <- names(res[[1]])
         df <- df %>% 
             mutate(album_uri = x,
                    track_number = row_number()) %>% 
@@ -85,14 +106,19 @@ get_tracks <- function(artist_info, album_info) {
             mutate(track_name = tracks[[track_number]]$name) %>%
             ungroup %>% 
             left_join(album_info, by = 'album_uri') %>% 
-            rename(track_uri = id) %>% 
-            select(-c(type, track_href, analysis_url, uri))
+            rename(track_uri = id) #%>% 
+        # select(-c(type, track_href, analysis_url, uri))
         return(df)
-    }) %>%
-        mutate(artist_img = artist_info$artist_img) %>% 
-        mutate_at(c('album_uri', 'track_uri', 'album_release_date', 'track_name', 'album_name', 'artist_img'), funs(as.character)) %>%
-        mutate_at(c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'album_release_year',
-                    'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature', 'track_number'), funs(as.numeric(gsub('[^0-9.-]+', '', as.character(.))))) # for some reason parse_number() from readr doesn't work here
+    }) 
+    
+    if (nrow(track_info) > 0) {
+        track_info <- track_info %>%
+            mutate(artist_name = artist_info$artist_name,
+                   artist_img = artist_info$artist_img) %>% 
+            mutate_at(c('album_uri', 'track_uri', 'album_release_date', 'track_name', 'album_name', 'artist_img'), funs(as.character)) %>%
+            mutate_at(c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'album_release_year',
+                        'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature', 'track_number'), funs(as.numeric(gsub('[^0-9.-]+', '', as.character(.))))) # for some reason parse_number() from readr doesn't work here
+    }
     return(track_info)
 }
 
@@ -196,7 +222,7 @@ quadrant_chart <- function(track_df) {
                       enableMouseTracking = FALSE,
                       zIndex = 0,
                       dataLabels = list(enabled = TRUE, y = 10, format = "{point.text}",
-                                        style = list(fontSize = "10px",
+                                        style = list(fontSize = "15px",
                                                      color =  'rgba(0,0,0,0.70)'))
         )
 }
