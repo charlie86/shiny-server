@@ -206,5 +206,27 @@
 
 <div style="clear:both;"></div>
 </div>
+
+ <script>
+    // If rcharlie.com asks for the page's height, return
+    window.addEventListener("message", function(event) {
+      // Ignore messages not coming from rcharlie.com
+      if (event.origin !== "http://rcharlie.com") {
+        return;
+      }
+      // If this is the first message, keep a reference to the parent window and remove the link to my site
+      if (typeof window.chucksite === "undefined") {
+        window.chucksite = event.source;
+      }
+      var data = event.data.split(":");
+      // rcharlie.com is asking for the content height
+      if (data[0] == "getHeight") {
+        var message = "height:" + document.documentElement.scrollHeight;
+        event.source.postMessage(message, "*");
+      }
+    });
+</script>
+
+
 </body>
 </html>
