@@ -113,7 +113,7 @@ get_tracks <- function(artist_info, album_info) {
     
     if (nrow(track_info) > 0) {
         track_info <- track_info %>%
-            mutate(artist_name = artist_info$artist_name,
+            mutate(artist_name = as.character(artist_info$artist_name),
                    artist_img = artist_info$artist_img) %>% 
             mutate_at(c('album_uri', 'track_uri', 'album_release_date', 'track_name', 'album_name', 'artist_img'), funs(as.character)) %>%
             mutate_at(c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'album_release_year',
