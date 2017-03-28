@@ -25,8 +25,7 @@ bikeshare_stations <- map_df(seq_len(length(res) - 1), function(x) {
     mutate(popup = HTML(paste0('<h3>', name, '</h3>', 
                                '<p><b>Bikes available: </b>', nbBikes, '</p>', 
                                '<p><b>Empty docks: </b>', nbEmptyDocks, '</p>'))) %>% 
-    ungroup %>% 
-    mutate(date_pulled = Sys.time())
+    ungroup
 
 dbWriteTable(conn, 'bikeshare_stations', bikeshare_stations, append = T, overwrite = F)
 dbDisconnect(conn)
