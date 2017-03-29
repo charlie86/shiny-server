@@ -173,7 +173,132 @@ album_feature_chart <- function(df, feature) {
     album_chart
 }
 
-quadrant_chart <- function(track_df) {
+############ playlists
+get_user_playlists <- function(user) {
+    base_url <- 'https://api.spotify.com/v1/'
+    user_search_query <- paste0(base_url, 'users/', user, '/playlists')    
+    user_playlists <- GET(user_search_query,
+                          query = list(access_token = access_token, limit = 50)) %>% content %>% .$items
+    
+    playlist_df <- map_df(1:length(user_playlists), function(x) {
+        list(
+            playlist_name = user_playlists[[x]]$name,
+            playlist_img = user_playlists[[x]]$images[[1]]$url,
+            playlist_num_tracks = user_playlists[[x]]$tracks$total,
+            playlist_tracks_url = user_playlists[[x]]$tracks$href
+        )
+    })
+    
+    return(playlist_df)
+}
+
+get_playlist_tracks <- function(playlists) {
+    map_df(1:nrow(playlists), function(x) {
+        
+        loops <- ceiling(playlists$playlist_num_tracks[x] / 100)
+        
+        map_df(1:loops, function(y) {
+            
+            res <- GET(playlists$playlist_tracks_url[x], query = list(access_token = access_token, limit = 100, offset = (100*y)-100)) %>% content %>% .$items
+            
+            track_info <- map_df(1:length(res), function(z) {
+                if (!is.null(res[[z]]$track$id)) {
+                    list(
+                        playlist_name = playlists$playlist_name[x],
+                        playlist_img = playlists$playlist_img[x],
+                        track_name = res[[z]]$track$name,
+                        track_uri = res[[z]]$track$id,
+                        artist_name = res[[z]]$track$artists[[1]]$name,
+                        album_name = res[[z]]$track$album$name,
+                        album_img = ifelse(length(res[[z]]$track$album$images) > 0, res[[z]]$track$album$images[[1]]$url, '')
+                    )
+                }
+            })
+        })
+    })
+}
+
+get_track_audio_features <- function(tracks) {
+    map_df(1:ceiling(nrow(tracks %>% filter(!duplicated(track_uri))) / 100), function(x) {
+        uris <- tracks %>%
+            filter(!duplicated(track_uri)) %>%
+            slice((x * 100) - 99:x) %>%
+            select(track_uri) %>%
+            .[[1]] %>%
+            paste0(collapse = ',')
+        
+        res <- GET(paste0('https://api.spotify.com/v1/audio-features/?ids=', uris),
+                   query = list(access_token = access_token)) %>% content %>% .$audio_features
+        
+        df <- unlist(res) %>%
+            matrix(nrow = length(res), byrow = T) %>%
+            as.data.frame(stringsAsFactors = F)
+        names(df) <- names(res[[1]])
+        df
+    }) %>% select(-c(type, uri, track_href, analysis_url)) %>%
+        rename(track_uri = id)
+}
+
+
+playlist_quadrant_chart <- function(track_df) {
+    
+    df2 <- data.frame(x = c(0, 1, 0, 1),
+                      y = c(1, 1, 0, 0),
+                      text = c('Angry',
+                               'Happy',
+                               'Sad',
+                               'Peaceful'))
+    
+    ds2 <- list_parse(df2)
+    
+    if (n_distinct(track_df$album_name) > 21) {
+        my_colors <- tol21rainbow
+    } else {
+        my_colors <- sample(tol21rainbow, n_distinct(track_df$playlist_name))
+    }
+    
+    track_df %>% 
+        rowwise %>%
+        mutate(tooltip = paste0('<a style = \"margin-right:', max(max(nchar(track_name), nchar(playlist_name)) * 9, 110), 'px\">',
+                                '<img src=', album_img, ' height=\"50\" style=\"float:left;margin-right:5px\">',
+                                '<b>Track:</b> ', track_name,
+                                '<br><b>Artist:</b> ', artist_name,
+                                '<br><b>Playlist:</b> ', playlist_name,
+                                '<br><b>Valence:</b> ', valence,
+                                '<br><b>Energy:</b> ', energy)) %>% 
+        ungroup %>% 
+        hchart(hcaes(x = valence, y = energy, group = playlist_name), type = 'scatter') %>% 
+        hc_tooltip(formatter = JS(paste0("function() {return this.point.tooltip;}")), useHTML = T) %>%
+        hc_xAxis(max = 1, min = 0, title = list(text = 'Valence')) %>%
+        hc_yAxis(max = 1, min = 0, title = list(text = 'Energy')) %>%
+        hc_add_theme(hc_theme_smpl()) %>% 
+        hc_colors(my_colors) %>% 
+        hc_yAxis(plotLines = list(list(
+            value = .5,
+            color = 'black',
+            width = 2,
+            zIndex = 2))) %>% 
+        hc_xAxis(plotLines = list(list(
+            value = .5,
+            color = 'black',
+            width = 2,
+            zIndex = 2))) %>% 
+        hc_add_series(data = ds2,
+                      name = "annotations",
+                      type = "scatter",
+                      color = "transparent",
+                      showInLegend = FALSE,
+                      enableMouseTracking = FALSE,
+                      zIndex = 0,
+                      dataLabels = list(enabled = TRUE, y = 10, format = "{point.text}",
+                                        style = list(fontSize = "15px",
+                                                     color =  'rgba(0,0,0,0.70)'))
+        )
+}
+
+############## both
+
+artist_quadrant_chart <- function(track_df) {
     
     df2 <- data.frame(x = c(0, 1, 0, 1),
                       y = c(1, 1, 0, 0),
@@ -227,3 +352,4 @@ quadrant_chart <- function(track_df) {
                                                      color =  'rgba(0,0,0,0.70)'))
         )
 }
+

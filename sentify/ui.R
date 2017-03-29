@@ -1,7 +1,7 @@
 shinyUI(fluidPage(
     navbarPage('Sentify',
                tabPanel('Artists',
-                        titlePanel('Sentify'),
+                        titlePanel('Artists'),
                         
                         sidebarLayout(
                             sidebarPanel(
@@ -12,10 +12,26 @@ shinyUI(fluidPage(
                                 helpText("Click here for more info on Spotify's API")
                             ),
                             mainPanel(
-                                uiOutput('plot')
+                                uiOutput('artist_plot')
                             )
                         )), 
-               tabPanel('Playlists')
+               tabPanel('Playlists',
+                        titlePanel('Playlists'),
+                        
+                        sidebarLayout(
+                            sidebarPanel(
+                                radioButtons('user_selector', '', c('Select user from list', 'Enter specific User ID')),
+                                uiOutput('select_user_ui'),
+                                actionButton('user_go', 'Search for user'),
+                                htmlOutput('user'),
+                                uiOutput('select_playlist_ui'),
+                                helpText("Click here for more info on Spotify's API")
+                            ),
+                            mainPanel(
+                                uiOutput('playlist_plot')
+                            )
+                        )
+               )
     ),
     
     tags$script(jscode)

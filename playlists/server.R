@@ -2,7 +2,7 @@ shinyServer(function(input, output, session) {
     
     observe({
         output$select_user_ui <- renderUI({
-            if (input$selector == 'Select user from list') {
+            if (input$user_selector == 'Select user from list') {
                 selectInput('user', 'Choose a User', famous_users)
             } else {
                 textInput('user', 'User', placeholder = 'e.g. barackobama')
@@ -11,32 +11,32 @@ shinyServer(function(input, output, session) {
     })
     
     
-    observeEvent(input$gobutton, {
-        user <- str_replace(input$user, 'spotify:user:', '')
-        # user <- 1231546658
-        user_info <- GET(paste0(base_url, 'users/', user), query = list(access_token = access_token)) %>% content
-        user_img <- ifelse(length(user_info$images) > 0, user_info$images[[1]]$url, 'https://pbs.twimg.com/profile_images/509949472139669504/IQSh7By1_400x400.jpeg')
+    observeEvent(input$user_go, {
+        user <<- str_replace(input$user, 'spotify:user:', '')
+        user_info <<- GET(paste0(base_url, 'users/', user), query = list(access_token = access_token)) %>% content
         
-        output$user <- renderText({
-            HTML(paste0('<img src=', user_img, ' height="200">'))
-        })
+        if (is.null(user_info$error)) {
+            user_img <<- ifelse(length(user_info$images) > 0, user_info$images[[1]]$url, 'https://pbs.twimg.com/profile_images/509949472139669504/IQSh7By1_400x400.jpeg')
+            
+            output$user <- renderText({
+                HTML(paste0('<img src=', user_img, ' height="200">', '<br/>', user_info$display_name))
+            })
+            
+            playlists <<- get_user_playlists(user)
+            output$select_playlist_ui <<- renderUI({
+                tagList(
+                    selectInput('playlist_selector', 'Choose playlists to include', choices = playlists$playlist_name, selected = playlists$playlist_name, multiple = T),
+                    actionButton('playlist_go', 'Get tracks')
+                )
+            })
+        }
+    })
+    
+    observeEvent(input$playlist_go, {
         
-        playlists <- spotify_get_user_playlists(user)
+        playlist_tracks <- get_playlist_tracks(playlists)
         
-        output$select_playlist_ui <- renderUI({
-            selectInput('playlist_selector', 'Choose a Playlist', choices = playlists$playlist_name, selected = playlists$playlist_name, multiple = T)
-        })
-        
-        # output$playlist_tbl <- renderDataTable({
-        #     playlists %>% 
-        #         mutate(playlist_img = paste0('<img src=', playlist_img, ' height="50">')) %>% 
-        #         select(img = playlist_img, name = playlist_name, num_tracks = playlist_num_tracks) %>% 
-        #         datatable(escape = F)
-        # })
-        
-        playlist_tracks <- spotify_get_playlist_tracks(playlists)
-        
-        playlist_track_audio_features <- spotify_get_track_audio_features(playlist_tracks)
+        playlist_track_audio_features <- get_track_audio_features(playlist_tracks)
         
         track_df <- playlist_tracks %>%
             left_join(playlist_track_audio_features, by = 'track_uri') %>%
@@ -71,46 +71,46 @@ shinyServer(function(input, output, session) {
                     width = 2,
                     zIndex = 2)))
         })
-        
-        # output$track_plot <- renderHighchart({
-        #     avg_line <- track_df %>%
-        #         group_by(playlist_name) %>%
-        #         summarise(avg = mean(valence, na.rm = T)) %>%
-        #         ungroup %>%
-        #         transmute(x = as.numeric(as.factor(playlist_name)), y = avg
-        #                   # ,tooltip = paste0('<a style = "margin-right:', nchar(album_name) * 10, 'px">',
-        #                   #                  '<img src=', album_img, ' height="50" style="float:left;margin-right:5px">',
-        #                   #                  '<b>Album:</b> ', album_name,
-        #                   #                  '<br><b>Average Track ', feature,':</b> ', round(avg, 4),
-        #                   #                  '</a>')
-        #         )
-        #     
-        #     hc <- hchart(object = track_df, hcaes(x = as.numeric(as.factor(playlist_name)), y = valence, group = playlist_name), type = 'scatter') %>%
-        #         hc_add_series(data = avg_line, type = 'line') %>%
-        #         hc_colors(c(sample(brewer.pal(12, 'Paired'), n_distinct(track_df$playlist_name)), 'black')) %>%
-        #         hc_yAxis(max = 1)
-        #     hc$x$hc_opts$series[[n_distinct(track_df$playlist_name) + 1]]$name <- 'Playlist Averages'
-        #     hc
-        # })
-        
     })
-    #### track valence for a specific playlist
-    # tots %>%
-    #     rowwise %>% 
-    #     mutate(tooltip = paste0('<a style = "margin-right:', max(nchar(track_name), nchar(playlist_name)) * 9, 'px">',
-    #                             '<img src=', album_img, ' height="50" style="float:left;margin-right:5px">',
-    #                             '<b>Artist:</b> ', artist_name,
-    #                             '<br><b>Track:</b> ', track_name,
-    #                             '<br><b>Valence:</b> ', valence)) %>% 
-    #     ungroup %>% 
-    #     filter(playlist_name == 'HappySad') %>%
-    #     arrange(-valence) %>% 
-    #     mutate(track_name = ifelse(nchar(track_name) > 20, paste0(substr(track_name, 1, 16), ' ...'), track_name)) %>% 
-    #     hchart(hcaes(x = track_name, y = valence), type = 'bar') %>% 
-    #     hc_tooltip(formatter = JS(paste0("function() {return this.point.tooltip;}")), useHTML = T) %>% 
-    #     hc_yAxis(max = 1, title = list(text = 'Valence')) %>%
-    #     hc_xAxis(title = list(text = '')) %>% 
-    #     hc_add_theme(hc_theme_economist())
-
+    
+    # output$track_plot <- renderHighchart({
+    #     avg_line <- track_df %>%
+    #         group_by(playlist_name) %>%
+    #         summarise(avg = mean(valence, na.rm = T)) %>%
+    #         ungroup %>%
+    #         transmute(x = as.numeric(as.factor(playlist_name)), y = avg
+    #                   # ,tooltip = paste0('<a style = "margin-right:', nchar(album_name) * 10, 'px">',
+    #                   #                  '<img src=', album_img, ' height="50" style="float:left;margin-right:5px">',
+    #                   #                  '<b>Album:</b> ', album_name,
+    #                   #                  '<br><b>Average Track ', feature,':</b> ', round(avg, 4),
+    #                   #                  '</a>')
+    #         )
+    #     
+    #     hc <- hchart(object = track_df, hcaes(x = as.numeric(as.factor(playlist_name)), y = valence, group = playlist_name), type = 'scatter') %>%
+    #         hc_add_series(data = avg_line, type = 'line') %>%
+    #         hc_colors(c(sample(brewer.pal(12, 'Paired'), n_distinct(track_df$playlist_name)), 'black')) %>%
+    #         hc_yAxis(max = 1)
+    #     hc$x$hc_opts$series[[n_distinct(track_df$playlist_name) + 1]]$name <- 'Playlist Averages'
+    #     hc
+    # })
     
 })
+#### track valence for a specific playlist
+# tots %>%
+#     rowwise %>% 
+#     mutate(tooltip = paste0('<a style = "margin-right:', max(nchar(track_name), nchar(playlist_name)) * 9, 'px">',
+#                             '<img src=', album_img, ' height="50" style="float:left;margin-right:5px">',
+#                             '<b>Artist:</b> ', artist_name,
+#                             '<br><b>Track:</b> ', track_name,
+#                             '<br><b>Valence:</b> ', valence)) %>% 
+#     ungroup %>% 
+#     filter(playlist_name == 'HappySad') %>%
+#     arrange(-valence) %>% 
+#     mutate(track_name = ifelse(nchar(track_name) > 20, paste0(substr(track_name, 1, 16), ' ...'), track_name)) %>% 
+#     hchart(hcaes(x = track_name, y = valence), type = 'bar') %>% 
+#     hc_tooltip(formatter = JS(paste0("function() {return this.point.tooltip;}")), useHTML = T) %>% 
+#     hc_yAxis(max = 1, title = list(text = 'Valence')) %>%
+#     hc_xAxis(title = list(text = '')) %>% 
+#     hc_add_theme(hc_theme_economist())
+
+

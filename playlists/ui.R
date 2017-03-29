@@ -1,9 +1,9 @@
 dashboardPage(
     dashboardHeader(),
     dashboardSidebar(
-        radioButtons('selector', '', c('Select user from list', 'Enter specific User ID')),
+        radioButtons('user_selector', '', c('Select user from list', 'Enter specific User ID')),
         uiOutput('select_user_ui'),
-        actionButton('gobutton', 'Search for user'),
+        actionButton('user_go', 'Search for user'),
         htmlOutput('user'),
         uiOutput('select_playlist_ui')
     ),

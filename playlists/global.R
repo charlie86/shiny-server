@@ -26,7 +26,7 @@ famous_users <- list(
 )
 
 ## helpers
-spotify_get_user_playlists <- function(user) {
+get_user_playlists <- function(user) {
     base_url <- 'https://api.spotify.com/v1/'
     user_search_query <- paste0(base_url, 'users/', user, '/playlists')    
     user_playlists <- GET(user_search_query,
@@ -44,28 +44,33 @@ spotify_get_user_playlists <- function(user) {
     return(playlist_df)
 }
 
-spotify_get_playlist_tracks <- function(playlists) {
-    
+get_playlist_tracks <- function(playlists) {
     map_df(1:nrow(playlists), function(x) {
-        print(x)
-        res <- GET(playlists$playlist_tracks_url[x], query = list(access_token = access_token)) %>% content %>% .$items
-        # y = 90
-        track_info <- map_df(1:length(res), function(y) {
+        
+        loops <- ceiling(playlists$playlist_num_tracks[x] / 100)
+        
+        map_df(1:loops, function(y) {
             
-            list(
-                playlist_name = playlists$playlist_name[x],
-                playlist_img = playlists$playlist_img[x],
-                track_name = res[[y]]$track$name,
-                track_uri = res[[y]]$track$id,
-                artist_name = res[[y]]$track$artists[[1]]$name,
-                album_name = res[[y]]$track$album$name,
-                album_img = ifelse(length(res[[y]]$track$album$images) > 0, res[[y]]$track$album$images[[1]]$url, '')
-            )
+            res <- GET(playlists$playlist_tracks_url[x], query = list(access_token = access_token, limit = 100, offset = (100*y)-100)) %>% content %>% .$items
+            
+            track_info <- map_df(1:length(res), function(z) {
+                if (!is.null(res[[z]]$track$id)) {
+                    list(
+                        playlist_name = playlists$playlist_name[x],
+                        playlist_img = playlists$playlist_img[x],
+                        track_name = res[[z]]$track$name,
+                        track_uri = res[[z]]$track$id,
+                        artist_name = res[[z]]$track$artists[[1]]$name,
+                        album_name = res[[z]]$track$album$name,
+                        album_img = ifelse(length(res[[z]]$track$album$images) > 0, res[[z]]$track$album$images[[1]]$url, '')
+                    )
+                }
+            })
         })
     })
 }
 
-spotify_get_track_audio_features <- function(tracks) {
+get_track_audio_features <- function(tracks) {
     map_df(1:ceiling(nrow(tracks %>% filter(!duplicated(track_uri))) / 100), function(x) {
         uris <- tracks %>%
             filter(!duplicated(track_uri)) %>%
@@ -86,7 +91,7 @@ spotify_get_track_audio_features <- function(tracks) {
         rename(track_uri = id)
 }
 
-spotify_search_artist <- function(artist_name) {
+search_artist <- function(artist_name) {
     
     # Search Spotify API for artist name
     res <- GET('https://api.spotify.com/v1/search', query = list(q = artist_name, type = 'artist')) %>%
