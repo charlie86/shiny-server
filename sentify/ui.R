@@ -1,7 +1,7 @@
 shinyUI(fluidPage(
     navbarPage('Sentify',
                tabPanel('Artists',
-                        titlePanel('Artists'),
+                        # titlePanel('Artists'),
                         
                         sidebarLayout(
                             sidebarPanel(
@@ -16,11 +16,11 @@ shinyUI(fluidPage(
                             )
                         )), 
                tabPanel('Playlists',
-                        titlePanel('Playlists'),
+                        # titlePanel('Playlists'),
                         
                         sidebarLayout(
                             sidebarPanel(
-                                radioButtons('user_selector', '', c('Select user from list', 'Enter specific User ID')),
+                                radioButtons('user_selector', '', c('Select user from list', HTML(paste0('Enter specific Spotify user ID')))),
                                 uiOutput('select_user_ui'),
                                 actionButton('user_go', 'Search for user'),
                                 htmlOutput('user'),
