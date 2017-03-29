@@ -47,8 +47,6 @@ shinyServer(function(input, output, session) {
         
         track_info <<- get_tracks(artist_info[artist_info$artist_name == artist_name, ], album_info[album_info$album_name %in% input$albums, ])
         
-        print(head(track_info))
-        
         output$quadrant_chart <- renderHighchart({
             quadrant_chart(track_info)
         })
@@ -57,6 +55,12 @@ shinyServer(function(input, output, session) {
         #     ggplot(track_info, aes(x = valence, y = energy, group = album_name), type = 'scatter') +
         #         geom_point()
         # })
+    })
+    
+    observe({
+        output$screenwidth <- renderText({
+            input$GetScreenWidth
+        })
     })
     
 })
