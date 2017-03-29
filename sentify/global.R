@@ -16,7 +16,6 @@ library(plotly)
 library(DT)
 
 source('helpers.R')
-# load('track_bank.RData')
 
 jscode <-
     '$(document).on("shiny:connected", function(e) {
@@ -24,6 +23,7 @@ jscode <-
   Shiny.onInputChange("GetScreenWidth",jsWidth);
 });
 '
+base_url <- 'https://api.spotify.com/v1/'
 
 famous_users <- list(
     'Barack Obama' = 'barackobama', 
