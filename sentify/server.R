@@ -52,6 +52,11 @@ shinyServer(function(input, output, session) {
         output$quadrant_chart <- renderHighchart({
             quadrant_chart(track_info)
         })
+        
+        # output$gg_chart <- renderPlot({
+        #     ggplot(track_info, aes(x = valence, y = energy, group = album_name), type = 'scatter') +
+        #         geom_point()
+        # })
     })
     
 })
