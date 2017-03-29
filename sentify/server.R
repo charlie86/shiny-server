@@ -10,7 +10,7 @@ shinyServer(function(input, output, session) {
         if (nchar(input$artist_search) > 0) {
             output$select_artist_ui <- renderUI({
                 artist_info <<- get_artists(input$artist_search)
-                selectInput('select_artist', 'Choose an Artist', choices = artist_info$artist_name)
+                selectInput('select_artist', 'Choose an artist from these matches', choices = artist_info$artist_name)
             })
         }
     })
