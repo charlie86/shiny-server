@@ -71,55 +71,56 @@ get_tracks <- function(artist_info, album_info) {
                          body = list(grant_type='client_credentials'),
                          encode = 'form', httr::config(http_version=2)) %>% content %>% .$access_token
     
-    track_info <- map_df(album_info$album_uri, function(x) {
-        tracks <- GET(paste0('https://api.spotify.com/v1/albums/', x, '/tracks')) %>% 
-            content %>% 
-            .$items 
+    if (nrow(album_info) > 0) {
         
-        Sys.sleep(.1)
-        
-        uris <- map(1:length(tracks), function(z) {
-            gsub('spotify:track:', '', tracks[z][[1]]$uri)
-        }) %>% unlist %>% paste0(collapse=',')
-        
-        res <- GET(paste0('https://api.spotify.com/v1/audio-features/?ids=', uris),
-                   query = list(access_token = access_token)) %>% content %>% .$audio_features
-        
-        audio_features <- c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'id', 'duration_ms', 'time_signature')
-        
-        df <- map_df(1:length(res), function(i) {
-            tmp <- map(audio_features, function(j) {
-                ifelse(is.null(res[[i]][[j]]), NA, res[[i]][[j]])
+        track_info <- map_df(album_info$album_uri, function(x) {
+            tracks <- GET(paste0('https://api.spotify.com/v1/albums/', x, '/tracks')) %>% 
+                content %>% 
+                .$items 
+            
+            Sys.sleep(.1)
+            
+            uris <- map(1:length(tracks), function(z) {
+                gsub('spotify:track:', '', tracks[z][[1]]$uri)
+            }) %>% unlist %>% paste0(collapse=',')
+            
+            res <- GET(paste0('https://api.spotify.com/v1/audio-features/?ids=', uris),
+                       query = list(access_token = access_token)) %>% content %>% .$audio_features
+            
+            audio_features <- c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'id', 'duration_ms', 'time_signature')
+            
+            df <- map_df(1:length(res), function(i) {
+                tmp <- map(audio_features, function(j) {
+                    ifelse(is.null(res[[i]][[j]]), NA, res[[i]][[j]])
+                })
+                names(tmp) <- audio_features
+                tmp
             })
-            names(tmp) <- audio_features
-            tmp
-        })
+            
+            df <- df %>% 
+                mutate(album_uri = x,
+                       track_number = row_number()) %>% 
+                rowwise %>% 
+                mutate(track_name = tracks[[track_number]]$name) %>%
+                ungroup %>% 
+                left_join(album_info, by = 'album_uri') %>% 
+                rename(track_uri = id) 
+            return(df)
+        }) 
         
-        # df <- unlist(res) %>% 
-        #     matrix(nrow = length(res), byrow = T) %>% 
-        #     as.data.frame(stringsAsFactors = F)
-        # names(df) <- names(res[[1]])
-        df <- df %>% 
-            mutate(album_uri = x,
-                   track_number = row_number()) %>% 
-            rowwise %>% 
-            mutate(track_name = tracks[[track_number]]$name) %>%
-            ungroup %>% 
-            left_join(album_info, by = 'album_uri') %>% 
-            rename(track_uri = id) #%>% 
-        # select(-c(type, track_href, analysis_url, uri))
-        return(df)
-    }) 
-    
-    if (nrow(track_info) > 0) {
-        track_info <- track_info %>%
-            mutate(artist_name = as.character(artist_info$artist_name),
-                   artist_img = artist_info$artist_img) %>% 
-            mutate_at(c('album_uri', 'track_uri', 'album_release_date', 'track_name', 'album_name', 'artist_img'), funs(as.character)) %>%
-            mutate_at(c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'album_release_year',
-                        'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature', 'track_number'), funs(as.numeric(gsub('[^0-9.-]+', '', as.character(.))))) # for some reason parse_number() from readr doesn't work here
-    }
-    return(track_info)
+        
+        if (nrow(track_info) > 0) {
+            track_info <- track_info %>%
+                mutate(artist_name = as.character(artist_info$artist_name),
+                       artist_img = artist_info$artist_img) %>% 
+                mutate_at(c('album_uri', 'track_uri', 'album_release_date', 'track_name', 'album_name', 'artist_img'), funs(as.character)) %>%
+                mutate_at(c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'album_release_year',
+                            'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature', 'track_number'), funs(as.numeric(gsub('[^0-9.-]+', '', as.character(.))))) # for some reason parse_number() from readr doesn't work here
+        }
+        return(track_info)
+    } else {
+        return(data.frame())
+    }   
 }
 
 album_feature_chart <- function(df, feature) {
@@ -177,7 +178,7 @@ quadrant_chart <- function(track_df) {
     df2 <- data.frame(x = c(0, 1, 0, 1),
                       y = c(1, 1, 0, 0),
                       text = c('Angry (high energy, low valence)',
-                               'Joyful (high energy, high valence)',
+                               'Happy (high energy, high valence)',
                                'Sad (low energy, low valence)',
                                'Peaceful (low energy, high valence)'))
     
