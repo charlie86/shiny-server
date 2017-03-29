@@ -10,8 +10,8 @@ shinyUI(fluidPage(
             helpText("Click here for more info on Spotify's API")
         ),
         mainPanel(
-            textOutput('screenwidth'),
-            highchartOutput('quadrant_chart')
+            uiOutput('plot')
+            # highchartOutput('quadrant_chart')
             # highchartOutput('quadrant_chart', width = '775px', height='700px')
         )
     ), tags$script(jscode)

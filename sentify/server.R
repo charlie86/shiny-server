@@ -1,6 +1,12 @@
 shinyServer(function(input, output, session) {
     
     observe({
+        output$screenwidth <- renderText({
+            input$GetScreenWidth
+        })
+    })
+    
+    observe({
         if (nchar(input$artist_search) > 0) {
             output$select_artist_ui <- renderUI({
                 artist_info <<- get_artists(input$artist_search)
@@ -51,15 +57,13 @@ shinyServer(function(input, output, session) {
             quadrant_chart(track_info)
         })
         
-        # output$gg_chart <- renderPlot({
-        #     ggplot(track_info, aes(x = valence, y = energy, group = album_name), type = 'scatter') +
-        #         geom_point()
-        # })
-    })
-    
-    observe({
-        output$screenwidth <- renderText({
-            input$GetScreenWidth
+        output$plot <- renderUI({
+            
+            if (input$GetScreenWidth >= 800) {
+                highchartOutput('quadrant_chart', width = '775px', height='700px')
+            } else {
+                highchartOutput('quadrant_chart')
+            }
         })
     })
     
