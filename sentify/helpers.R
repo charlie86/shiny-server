@@ -177,10 +177,10 @@ quadrant_chart <- function(track_df) {
     
     df2 <- data.frame(x = c(0, 1, 0, 1),
                       y = c(1, 1, 0, 0),
-                      text = c('Angry (high energy, low valence)',
-                               'Happy (high energy, high valence)',
-                               'Sad (low energy, low valence)',
-                               'Peaceful (low energy, high valence)'))
+                      text = c('Angry',
+                               'Happy',
+                               'Sad',
+                               'Peaceful'))
     
     ds2 <- list_parse(df2)
     
