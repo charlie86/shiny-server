@@ -43,7 +43,7 @@ shinyServer(function(input, output, session) {
                                        choices = unique(album_info$album_name), 
                                        selected = unique(album_info$album_name), multiple = T),
                         withBusyIndicatorUI(
-                            actionButton('tracks_go', 'Get tracks and generate plots', class = 'btn-primary')
+                            actionButton('tracks_go', 'Get tracks and generate plot', class = 'btn-primary')
                         )
                     )
                 })
@@ -124,7 +124,7 @@ shinyServer(function(input, output, session) {
                     tagList(
                         selectInput('playlist_selector', 'Choose playlists to include', choices = playlists$playlist_name, selected = playlists$playlist_name, multiple = T),
                         withBusyIndicatorUI(
-                            actionButton('playlist_go', 'Get tracks and generate plots', class = 'btn-primary')
+                            actionButton('playlist_go', 'Get tracks and generate plot', class = 'btn-primary')
                         )
                     )
                 })
