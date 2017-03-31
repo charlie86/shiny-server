@@ -13,7 +13,7 @@ shinyUI(fluidPage(
                                 uiOutput('select_artist_ui'),
                                 uiOutput('album_go_ui'),
                                 uiOutput('albums_ui'),
-                                helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/">here</a> for more info on Spotify\'s API')))
+                                helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/" target="_blank">here</a> for more info on Spotify\'s API')))
                             ),
                             mainPanel(
                                 uiOutput('artist_plot')
@@ -30,7 +30,7 @@ shinyUI(fluidPage(
                                 ),
                                 htmlOutput('user'),
                                 uiOutput('select_playlist_ui'),
-                                helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/">here</a> for more info on Spotify\'s API')))
+                                helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/" target="_blank">here</a> for more info on Spotify\'s API')))
                             ),
                             mainPanel(
                                 uiOutput('playlist_plot')
