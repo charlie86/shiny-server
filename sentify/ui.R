@@ -1,4 +1,6 @@
 shinyUI(fluidPage(
+    tags$head(tags$link(rel = 'icon', type = 'image/png', href = 'smiley.png'),
+              tags$title('Sentify')),
     
     useShinyjs(),
     tags$script(jscode),
@@ -23,7 +25,12 @@ shinyUI(fluidPage(
                         
                         sidebarLayout(
                             sidebarPanel(
-                                radioButtons('user_selector', '', c('Select user from list', HTML(paste0('Enter specific Spotify user ID')))),
+                                radioButtons('user_selector', '', c('Select user from list', 'Enter specific Spotify User ID')),
+                                conditionalPanel("input.user_selector=='Enter specific Spotify User ID'",
+                                                 actionButton('tutorial_go', 'Where do I find my Spotify User ID?')
+                                ),
+                                bsModal('modalExample', 'Where to find your Spotify User ID (Desktop only)', 'tutorial_go', size = 'large', htmlOutput('uri_gif')),
+                                br(),
                                 uiOutput('select_user_ui'),
                                 withBusyIndicatorUI(
                                     actionButton('user_go', 'Search for user', class = 'btn-primary')

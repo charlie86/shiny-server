@@ -1,6 +1,7 @@
 library(httr)
 library(shiny)
 library(shinyjs)
+library(shinyBS)
 library(tidyverse)
 library(stringr)
 library(tibble)

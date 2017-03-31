@@ -134,6 +134,10 @@ shinyServer(function(input, output, session) {
         })
     })
     
+    output$uri_gif <- renderText({
+        HTML('<img src="user_uri.gif">')
+    })
+    
     observeEvent(input$playlist_go, {
         withBusyIndicatorServer('playlist_go', {
             
