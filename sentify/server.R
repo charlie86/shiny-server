@@ -19,7 +19,7 @@ shinyServer(function(input, output, session) {
         artist_name <<- input$select_artist
         output$album_go_ui <- renderUI({
             withBusyIndicatorUI(
-                actionButton('album_go', 'Get album info', class = 'btn-primary')
+                actionButton('album_go', 'Get albums', class = 'btn-primary')
             )
         })
     })
@@ -43,7 +43,7 @@ shinyServer(function(input, output, session) {
                                        choices = unique(album_info$album_name), 
                                        selected = unique(album_info$album_name), multiple = T),
                         withBusyIndicatorUI(
-                            actionButton('tracks_go', 'Get track info', class = 'btn-primary')
+                            actionButton('tracks_go', 'Get tracks and generate plots', class = 'btn-primary')
                         )
                     )
                 })
@@ -68,10 +68,20 @@ shinyServer(function(input, output, session) {
                 artist_quadrant_chart(track_info)
             })
             
+            # output$artist_profile_chart <- renderHighchart({
+            #     sentiment_profile_chart(track_info, 'album_name')
+            # })
+            
             output$artist_plot <- renderUI({
                 
                 if (input$GetScreenWidth >= 800) {
-                    highchartOutput('artist_quadrant_chart', width = '775px', height='700px')
+                    highchartOutput('artist_quadrant_chart', width = '775px', height = '700px')
+                    # tabBox(
+                    #     id = 'plots',
+                    #     tabPanel('Sentiment Quadrants', highchartOutput('artist_quadrant_chart', width = '775px', height = '700px')),
+                    #     tabPanel('Playlist Profile', highchartOutput('artist_profile_chart', width = '775px', height = '700px')),
+                    #     width = 9
+                    # )
                 } else {
                     highchartOutput('artist_quadrant_chart')
                 }
@@ -114,7 +124,7 @@ shinyServer(function(input, output, session) {
                     tagList(
                         selectInput('playlist_selector', 'Choose playlists to include', choices = playlists$playlist_name, selected = playlists$playlist_name, multiple = T),
                         withBusyIndicatorUI(
-                            actionButton('playlist_go', 'Get tracks', class = 'btn-primary')
+                            actionButton('playlist_go', 'Get tracks and generate plots', class = 'btn-primary')
                         )
                     )
                 })
@@ -135,7 +145,7 @@ shinyServer(function(input, output, session) {
             
             playlist_track_audio_features <- get_track_audio_features(playlist_tracks)
             
-            track_df <- playlist_tracks %>%
+            track_df <<- playlist_tracks %>%
                 filter(playlist_name %in% input$playlist_selector) %>% 
                 left_join(playlist_track_audio_features, by = 'track_uri') %>%
                 mutate_at(c('playlist_name', 'playlist_img', 'track_name', 'track_uri', 'artist_name', 'album_name', 'album_img'), funs(as.character)) %>%
@@ -150,14 +160,25 @@ shinyServer(function(input, output, session) {
                 playlist_quadrant_chart(track_df)
             })
             
+            # output$playlist_profile_chart <- renderHighchart({
+            #     sentiment_profile_chart(track_df, 'playlist_name')
+            # })
+            
             output$playlist_plot <- renderUI({
                 
                 if (input$GetScreenWidth >= 800) {
-                    highchartOutput('playlist_quadrant_chart', width = '775px', height='700px')
+                    highchartOutput('playlist_quadrant_chart', width = '775px', height = '700px')
+                    # tabBox(
+                    #     id = 'plots',
+                    #     tabPanel('Sentiment Quadrants', highchartOutput('playlist_quadrant_chart', width = '775px', height = '700px')),
+                    #     tabPanel('Playlist Profile', highchartOutput('playlist_profile_chart', width = '775px', height = '700px')),
+                    #     width = 9
+                    #     )
                 } else {
                     highchartOutput('playlist_quadrant_chart')
                 }
             })
+            
         })
     })
     

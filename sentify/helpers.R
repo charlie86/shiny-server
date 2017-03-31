@@ -296,6 +296,23 @@ playlist_quadrant_chart <- function(track_df) {
         )
 }
 
+profile_bar_chart <- function(track_df, group_var_str) {
+    track_df %>% 
+        rename_('group_var' = group_var_str) %>% 
+        group_by(group_var) %>% 
+        summarise(valence = mean(valence, na.rm = T),
+                  energy = mean(energy, na.rm = T),
+                  `(energy+valence)/2` = sum(valence, energy, na.rm = T) / 2) %>% 
+        ungroup %>% 
+        arrange(-`(energy+valence)/2`) %>% 
+        gather(metric, value, valence:`(energy+valence)/2`) %>% 
+        mutate(value = round(value, 4)) %>% 
+        hchart(hcaes(x = group_var, y = value, group = metric), type = 'bar') %>% 
+        hc_xAxis(title = list(text = '')) %>% 
+        hc_yAxis(title = list(text = ''), max = 1) %>% 
+        hc_add_theme(hc_theme_smpl())
+}
+
 ############## both
 
 artist_quadrant_chart <- function(track_df) {
@@ -351,6 +368,52 @@ artist_quadrant_chart <- function(track_df) {
                                         style = list(fontSize = '15px',
                                                      color =  'rgba(0,0,0,0.70)'))
         )
+}
+
+classify_track_sentiment <- function(valence, energy) {
+    if (is.na(valence) | is.na(energy)) {
+        return(NA)
+    }
+    else if (valence >= .5) {
+        if (energy >= .5) {
+            return('Happy')
+        } else {
+            return('Peaceful')
+        }
+    } else {
+        if (energy >= .5) {
+            return('Angry')
+        } else {
+            return('Sad')
+        }
+    }
+}
+
+sentiment_profile_chart <- function(track_df, group_var_str) {
+    sentiment_profiles <- track_df %>% 
+        rowwise %>% 
+        mutate(sentiment = classify_track_sentiment(valence, energy)) %>% 
+        ungroup
+    
+    group_var_profiles <- sentiment_profiles %>% 
+        rename_('group_var' = group_var_str) %>% 
+        count(group_var, sentiment) %>% 
+        mutate(pct = round(n / sum(n), 2)) %>% 
+        ungroup 
+    
+    user_profile <- sentiment_profiles %>% 
+        count(sentiment) %>% 
+        mutate(pct = round(n / sum(n), 2)) %>% 
+        ungroup %>% 
+        mutate_(group_var = '"All"')
+    
+    all_profiles <- rbind(user_profile, group_var_profiles)
+    
+    all_profiles %>% 
+        hchart(hcaes(x = group_var, y = pct, group = sentiment), type = 'bar') %>% 
+        hc_add_theme(hc_theme_smpl()) %>% 
+        hc_xAxis(title = list(text = '')) %>% 
+        hc_colors(c('red', 'green', 'lightblue', 'blue'))
 }
 
 ########## loading button

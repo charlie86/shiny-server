@@ -6,7 +6,6 @@ shinyUI(fluidPage(
     
     navbarPage('Sentify',
                tabPanel('Artists',
-                        # titlePanel('Artists'),
                         
                         sidebarLayout(
                             sidebarPanel(
@@ -14,14 +13,13 @@ shinyUI(fluidPage(
                                 uiOutput('select_artist_ui'),
                                 uiOutput('album_go_ui'),
                                 uiOutput('albums_ui'),
-                                helpText("Click here for more info on Spotify's API")
+                                helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/">here</a> for more info on Spotify\'s API')))
                             ),
                             mainPanel(
                                 uiOutput('artist_plot')
                             )
                         )), 
                tabPanel('Playlists',
-                        # titlePanel('Playlists'),
                         
                         sidebarLayout(
                             sidebarPanel(
@@ -32,7 +30,7 @@ shinyUI(fluidPage(
                                 ),
                                 htmlOutput('user'),
                                 uiOutput('select_playlist_ui'),
-                                helpText("Click here for more info on Spotify's API")
+                                helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/">here</a> for more info on Spotify\'s API')))
                             ),
                             mainPanel(
                                 uiOutput('playlist_plot')
