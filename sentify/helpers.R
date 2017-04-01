@@ -180,14 +180,19 @@ get_user_playlists <- function(user) {
     user_playlists <- GET(user_search_query,
                           query = list(access_token = access_token, limit = 50)) %>% content %>% .$items
     
-    playlist_df <- map_df(1:length(user_playlists), function(x) {
-        list(
-            playlist_name = user_playlists[[x]]$name,
-            playlist_img = user_playlists[[x]]$images[[1]]$url,
-            playlist_num_tracks = user_playlists[[x]]$tracks$total,
-            playlist_tracks_url = user_playlists[[x]]$tracks$href
-        )
-    })
+    if (length(user_playlists) > 0) {
+        
+        playlist_df <- map_df(1:length(user_playlists), function(x) {
+            list(
+                playlist_name = user_playlists[[x]]$name,
+                playlist_img = user_playlists[[x]]$images[[1]]$url,
+                playlist_num_tracks = user_playlists[[x]]$tracks$total,
+                playlist_tracks_url = user_playlists[[x]]$tracks$href
+            )
+        })
+    } else {
+        playlist_df <- data.frame()
+    }
     
     return(playlist_df)
 }

@@ -120,6 +120,11 @@ shinyServer(function(input, output, session) {
                 })
                 
                 playlists <<- get_user_playlists(user)
+                
+                if (nrow(playlists) == 0) {
+                    stop("Sorry, that user doesn't have any playlists on Spotify.")
+                }
+                
                 output$select_playlist_ui <<- renderUI({
                     tagList(
                         selectInput('playlist_selector', 'Choose playlists to include', choices = playlists$playlist_name, selected = playlists$playlist_name, multiple = T),
