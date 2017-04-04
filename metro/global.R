@@ -10,11 +10,13 @@ library(shinydashboard)
 library(rjson)
 library(RMySQL)
 
-chuckDB <- dbConnect(MySQL(), 
-                  user = 'chuckteezy',
-                  password = 'charlie86',
-                  dbname = 'chuckDB',
-                  host = 'chuckdb.ch74fm7hgclb.us-west-2.rds.amazonaws.com')
+icon_url <- 'https://www.wmata.com/systemimages/sprites/icons/rail-colors-se811fd61b6.png'
+
+conn <- dbConnect(MySQL(), 
+                  user = 'rcharlie',
+                  password = 'charlie86', 
+                  dbname = 'rcharlie',
+                  host = "rcharlie.ch74fm7hgclb.us-west-2.rds.amazonaws.com")
 
 pull <- function(url) {
     
@@ -34,10 +36,10 @@ pull <- function(url) {
     }))
 }
 
-metrics <- c('incidents' = 'https://api.wmata.com/Incidents.svc/json/Incidents',
-             'predictions' = 'https://api.wmata.com/StationPrediction.svc/json/GetPrediction/All',
-             'line_info' = 'https://api.wmata.com/Rail.svc/json/jLines',
-             'stations' = 'https://api.wmata.com/Rail.svc/json/jStations')
+metrics <- c('metro_incidents' = 'https://api.wmata.com/Incidents.svc/json/Incidents',
+             'metro_predictions' = 'https://api.wmata.com/StationPrediction.svc/json/GetPrediction/All',
+             'metro_line_info' = 'https://api.wmata.com/Rail.svc/json/jLines',
+             'metro_stations' = 'https://api.wmata.com/Rail.svc/json/jStations')
 
 map_lines <- readOGR('lines.geojson', 'OGRGeoJSON')
 

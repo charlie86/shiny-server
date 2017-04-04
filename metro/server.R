@@ -4,7 +4,7 @@ shinyServer(function(input, output, session) {
         
         lapply(metrics, function(x) {
             assign(names(metrics[metrics == x]), 
-                   dbGetQuery(chuckDB, paste0('SELECT * FROM ', names(metrics[metrics == x]), 
+                   dbGetQuery(conn, paste0('SELECT * FROM ', names(metrics[metrics == x]), 
                                            ' WHERE time = (SELECT MAX(time) FROM ', names(metrics[metrics == x]), ')')), 
                    envir = .GlobalEnv)
         }) %>% invisible
@@ -34,13 +34,15 @@ shinyServer(function(input, output, session) {
         #            lead = lead(Min),
         #            time = ifelse(Min > lead(Min), Min - lead(Min), NA))
         
-        predictions <- predictions %>%
+        predictions <- metro_predictions %>%
             group_by(LocationName) %>%
             mutate(rank = row_number()) %>%
             ungroup
         
-        df <- stations %>%
+        df <- metro_stations %>%
             left_join(predictions, by = c('Code' = 'LocationCode'))
+        
+        test <<- df
         
         df$line_img <- vapply(as.character(df$Line), function(x) {
             switch(x,
@@ -54,10 +56,10 @@ shinyServer(function(input, output, session) {
                    '--' = '--',
                    'NA'
             )
-        }, character(1)) %>% paste0('<img src="http://www.wmata.com/images/', ., '-dot.png" height = "30"></img>')
+        }, character(1)) %>% paste0('<img src="', ., '.png" height = "30"></img>')
         
-        df$line_img <- ifelse(df$Line %in% c('--', 'No'), '<img src="http://emojipedia-us.s3.amazonaws.com/cache/63/66/6366ee08b752e4af3d8c4ed88f35f67c.png" height = "30"></img>', df$line_img)
-        
+        df$line_img <- ifelse(df$Line %in% c('--', 'No'), '<img src="middle_finger.png" height = "30"></img>', df$line_img)
+        df$Min <- ifelse(df$Min == '', '<img src="middle_finger.png" height = "30"></img>', df$Min)
         
         my_df <<- df %>%
             rowwise %>%
