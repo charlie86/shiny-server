@@ -20,9 +20,10 @@ shinyUI(fluidPage(
     tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'map.css')),
     sidebarLayout(
         sidebarPanel(
-                   div(style = 'display: inline-block',
-                       div(style = 'display: inline-block', selectizeInput('station', 'Station', 'Metro Center', width = '350px'))
-                   ),
+                   # div(style = 'display: inline-block',
+                   #     div(style = 'display: inline-block', selectizeInput('station', 'Station', 'Metro Center', width = '100%'))
+                   # ),
+                    selectizeInput('station', 'Station', 'Metro Center'),
                    dataTableOutput('train_tbl'),
                    br(), 
                    actionButton('refresh', 'Refresh'),
