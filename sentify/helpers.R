@@ -227,7 +227,7 @@ get_track_audio_features <- function(tracks) {
     map_df(1:ceiling(nrow(tracks %>% filter(!duplicated(track_uri))) / 100), function(x) {
         uris <- tracks %>%
             filter(!duplicated(track_uri)) %>%
-            slice((x * 100) - 99:x) %>%
+            slice(((x * 100) - 99):(x*100)) %>%
             select(track_uri) %>%
             .[[1]] %>%
             paste0(collapse = ',')
