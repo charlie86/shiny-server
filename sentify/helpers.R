@@ -266,12 +266,12 @@ get_track_audio_features <- function(tracks) {
 
 playlist_quadrant_chart <- function(track_df) {
     
-    df2 <- data.frame(x = c(0, .9, 0, .9),
+    df2 <- data.frame(x = c(0, 1, 0, 1),
                       y = c(1, 1, 0, 0),
-                      text = c('Angry/Frustrated',
-                               'Happy/Joyful',
-                               'Sad/Depressing',
-                               'Peaceful/Soothing'))
+                      text = c('Angry',
+                               'Happy',
+                               'Sad',
+                               'Peaceful'))
     
     ds2 <- list_parse(df2)
     
@@ -335,12 +335,12 @@ profile_bar_chart <- function(track_df, group_var_str) {
 
 artist_quadrant_chart <- function(track_df) {
     
-    df2 <- data.frame(x = c(0, .9, 0, .9),
+    df2 <- data.frame(x = c(0, 1, 0, 1),
                       y = c(1, 1, 0, 0),
-                      text = c('Angry/Frustrated',
-                               'Happy/Joyful',
-                               'Sad/Depressing',
-                               'Peaceful/Soothing'))
+                      text = c('Angry',
+                               'Happy',
+                               'Sad',
+                               'Peaceful'))
     
     ds2 <- list_parse(df2)
     
