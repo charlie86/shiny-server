@@ -173,8 +173,8 @@ album_feature_chart <- function(df, feature) {
 }
 
 ############ playlists
-get_user_playlists <- function(user) {
-    user <- tolower(user)
+get_user_playlists <- function(user_str) {
+    user <- tolower(user_str)
     base_url <- 'https://api.spotify.com/v1/'
     user_search_query <- paste0(base_url, 'users/', user, '/playlists')    
     user_playlists <- GET(user_search_query,
