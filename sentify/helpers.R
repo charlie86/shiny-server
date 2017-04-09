@@ -1,21 +1,3 @@
-neon_colors <- c(
-    '#84DE02'
-    , '#FF4466'
-    , '#4BC7CF'
-    , '#FF85CF'
-    , '#FFDF46'
-    , '#391285'
-    , '#E88E5A'
-    , '#DDE26A'
-    , '#C53151'
-    , '#B05C52'
-    , '#FD5240'
-    , '#FF4681'
-    , '#FF6D3A'
-    , '#FF404C'
-    , '#A0E6FF'
-)
-
 hc_theme_rcharlie <- hc_theme_merge(
     hc_theme_monokai(),
     hc_theme(

@@ -22,7 +22,7 @@ shinyUI(fluidPage(
                                 uiOutput('artist_plot')
                             )
                         )), 
-               tabPanel('Playlists',
+               tabPanel('User Playlists',
                         
                         sidebarLayout(
                             sidebarPanel(

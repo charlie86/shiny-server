@@ -35,18 +35,33 @@ jscode <-
 base_url <- 'https://api.spotify.com/v1/'
 
 famous_users <- list(
-    'Barack Obama' = 'barackobama', 
     'Snoop Dogg' = 'snoopdogg',
+    'Barack Obama' = 'barackobama', 
     'Jonny Greenwood' = 'mrmarmite',
+    'Trent Reznor' = 'treznor',
     'Jamie xx' = 'jamiexx',
     'Daft Punk' = 'daftpunkofficial',
-    'Kendrick Lamar' = 'kendricklamar'
+    'Kendrick Lamar' = 'kendricklamar',
+    'Ashton Kutcher' = 'aplusk'
 )
 
+neon_colors <- c(
+    '#84DE02'
+    , '#FF4466'
+    , '#4BC7CF'
+    , '#FF85CF'
+    , '#FFDF46'
+    , '#391285'
+    , '#E88E5A'
+    , '#DDE26A'
+    , '#C53151'
+    , '#B05C52'
+    , '#FD5240'
+    , '#FF4681'
+    , '#FF6D3A'
+    , '#FF404C'
+    , '#A0E6FF'
+)
 
-tol14rainbow <- c("#882E72", "#B178A6", "#D6C1DE", "#1965B0", "#5289C7", "#7BAFDE", "#4EB265", "#90C987", "#CAE0AB", "#F7EE55", "#F6C141", "#F1932D", "#E8601C", "#DC050C")
-tol15rainbow <- c("#114477", "#4477AA", "#77AADD", "#117755", "#44AA88", "#99CCBB", "#777711", "#AAAA44", "#DDDD77", "#771111", "#AA4444", "#DD7777", "#771144", "#AA4477", "#DD77AA")
-tol18rainbow <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788")
-tol21rainbow <- c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788")
 
 pca_vars <- c('danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms')
