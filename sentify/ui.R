@@ -27,13 +27,10 @@ shinyUI(fluidPage(
                         
                         sidebarLayout(
                             sidebarPanel(
-                                radioButtons('user_selector', '', c('Select user from list', 'Enter specific Spotify User ID')),
-                                conditionalPanel("input.user_selector=='Enter specific Spotify User ID'",
-                                                 actionButton('tutorial_go', 'Where do I find my Spotify User ID?')
-                                ),
-                                bsModal('modalExample', 'Where to find your Spotify User ID (Desktop only)', 'tutorial_go', size = 'large', htmlOutput('uri_gif')),
-                                br(),
-                                uiOutput('select_user_ui'),
+                                textInput('user', 'Enter a User\'s Spotify URI', placeholder = 'e.g. snoopdogg'),
+                                actionButton('tutorial_go', 'Where do I find my Spotify URI?'),
+                                br(), br(),
+                                bsModal('modalExample', 'Where to find your Spotify URI (Desktop only)', 'tutorial_go', size = 'large', htmlOutput('uri_gif')),
                                 withBusyIndicatorUI(
                                     actionButton('user_go', 'Search for user', class = 'btn-primary')
                                 ),

@@ -93,19 +93,6 @@ shinyServer(function(input, output, session) {
         })
     })
     
-    
-    
-    observe({
-        output$select_user_ui <- renderUI({
-            if (input$user_selector == 'Select user from list') {
-                selectInput('user', 'Choose a User', famous_users)
-            } else {
-                textInput('user', 'User', placeholder = 'e.g. snoopdogg')
-            }
-        })
-    })
-    
-    
     observeEvent(input$user_go, {
         withBusyIndicatorServer('user_go', {
             
@@ -119,8 +106,8 @@ shinyServer(function(input, output, session) {
             if (is.null(user_info$error)) {
                 user_img <<- ifelse(length(user_info$images) > 0, user_info$images[[1]]$url, 'https://pbs.twimg.com/profile_images/509949472139669504/IQSh7By1_400x400.jpeg')
                 
-                if (user == 'snoopdogg') {
-                    user_img <<- 'http://vignette3.wikia.nocookie.net/boondocks/images/f/fb/Snoop-dogg1755g.jpeg/revision/latest?cb=20130909183857'
+                if (user == 'barackobama') {
+                    user_img <<- 'barry.jpg'
                 }
                 
                 output$user <- renderText({
