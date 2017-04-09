@@ -1,7 +1,7 @@
 .btn, .btn:active, .btn:focus {
 	background-color: #2ebd59 !important; 
 	border-color: #2ebd59 !important;
-	color: #fff;
+	color: #fff !important;
 }
 
 .btn:hover {
