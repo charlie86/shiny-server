@@ -37,6 +37,7 @@
 .navbar-nav>.active>a {
 	background-color: #000 !important;
 	color: #fff !important;
+	border-bottom: thick solid #1ed760;
 }
 
 .navbar-nav>li>a:hover {
