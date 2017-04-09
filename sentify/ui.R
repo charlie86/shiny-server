@@ -27,7 +27,7 @@ shinyUI(fluidPage(
                         
                         sidebarLayout(
                             sidebarPanel(
-                                textInput('user', 'Enter a User\'s Spotify URI', placeholder = 'e.g. snoopdogg'),
+                                textInput('user', 'Enter a User\'s Spotify URI', placeholder = 'e.g. barackobama'),
                                 actionButton('tutorial_go', 'Where do I find my Spotify URI?'),
                                 br(), br(),
                                 bsModal('modalExample', 'Where to find your Spotify URI (Desktop only)', 'tutorial_go', size = 'large', htmlOutput('uri_gif')),
