@@ -1,5 +1,5 @@
 shinyUI(fluidPage(
-    tags$head(tags$link(rel = 'icon', type = 'image/png', href = 'smiley.png'),
+    tags$head(tags$link(rel = 'icon', type = 'image/png', href = 'green_music_note.png'),
               tags$title('Sentify')),
     
     useShinyjs(),
