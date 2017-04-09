@@ -67,3 +67,13 @@
 html {
 	background-color: #828282;
 }
+
+#uri_gif>img {
+	margin: auto;
+	width: 100%;
+}
+
+/*.modal-body {
+	overflow: hidden;
+	margin-right: 15px;
+}*/
