@@ -56,7 +56,7 @@ shinyServer(function(input, output, session) {
     observeEvent(input$tracks_go, {
         
         withBusyIndicatorServer('tracks_go', {
-
+            
             artist_tracks <<- get_album_tracks(album_info)
             
             artist_track_audio_features <<- get_track_audio_features(artist_tracks[artist_tracks$album_name %in% input$albums, ])
@@ -78,17 +78,22 @@ shinyServer(function(input, output, session) {
             
             output$artist_plot <- renderUI({
                 
-                if (input$GetScreenWidth >= 800) {
-                    highchartOutput('artist_quadrant_chart', width = '820px', height = '700px')
-                    # tabBox(
-                    #     id = 'plots',
-                    #     tabPanel('Sentiment Quadrants', highchartOutput('artist_quadrant_chart', width = '775px', height = '700px')),
-                    #     tabPanel('Playlist Profile', highchartOutput('artist_profile_chart', width = '775px', height = '700px')),
-                    #     width = 9
-                    # )
-                } else {
-                    highchartOutput('artist_quadrant_chart')
-                }
+                withProgress(message = 'Making plot', value = 0, {
+                    
+                    if (input$GetScreenWidth >= 800) {
+                        incProgress(.9)
+                        highchartOutput('artist_quadrant_chart', width = '820px', height = '700px')
+                        # tabBox(
+                        #     id = 'plots',
+                        #     tabPanel('Sentiment Quadrants', highchartOutput('artist_quadrant_chart', width = '775px', height = '700px')),
+                        #     tabPanel('Playlist Profile', highchartOutput('artist_profile_chart', width = '775px', height = '700px')),
+                        #     width = 9
+                        # )
+                    } else {
+                        incProgress(.9)
+                        highchartOutput('artist_quadrant_chart')
+                    }
+                })
             })
         })
     })
