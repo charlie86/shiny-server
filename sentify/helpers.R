@@ -1,3 +1,61 @@
+neon_colors <- c(
+    '#84DE02'
+    , '#FF4466'
+    , '#4BC7CF'
+    , '#FF85CF'
+    , '#FFDF46'
+    , '#391285'
+    , '#E88E5A'
+    , '#DDE26A'
+    , '#C53151'
+    , '#B05C52'
+    , '#FD5240'
+    , '#FF4681'
+    , '#FF6D3A'
+    , '#FF404C'
+    , '#A0E6FF'
+)
+
+hc_theme_rcharlie <- hc_theme_merge(
+    hc_theme_monokai(),
+    hc_theme(
+        chart = list(
+            backgroundColor = '#828282'
+        ),
+        title = list(
+            style = list(
+                color = '#ffffff'
+            )
+        ),
+        subtitle = list(
+            style = list(
+                color = '#ffffff'
+            )
+        ),
+        xAxis = list(
+            labels = list(style = list(
+                color = '#ffffff'
+            )),
+            title = list(style = list(
+                color = '#ffffff'
+            ))
+            
+        ),
+        yAxis = list(
+            labels = list(style = list(
+                color = '#ffffff'
+            )),
+            title = list(style = list(
+                color = '#ffffff'
+            ))
+        ),
+        legend = list(
+            itemStyle = list(
+                color = '#ffffff'
+            )
+        )
+    )
+)
 get_artists <- function(artist_name) {
     
     # Search Spotify API for artist name
@@ -169,7 +227,7 @@ album_feature_chart <- function(df, feature) {
                  )) %>% 
         hc_yAxis(title = list(text = feature)) %>% 
         hc_title(text = paste(artist_name, feature, 'by album')) %>% 
-        hc_add_theme(hc_theme_smpl())
+        hc_add_theme(hc_theme_rcharlie)
     album_chart
 }
 
@@ -256,19 +314,12 @@ playlist_quadrant_chart <- function(track_df) {
     
     ds2 <- list_parse(df2)
     
-    if (n_distinct(track_df$album_name) > 21) {
-        my_colors <- tol21rainbow
-    } else {
-        my_colors <- sample(tol21rainbow, n_distinct(track_df$playlist_name))
-    }
-    
     track_df %>% 
         rowwise %>%
-        mutate(tooltip = paste0('<a style = \"margin-right:', max(max(nchar(track_name), nchar(playlist_name)) * 9, 110), 'px\">',
+        mutate(tooltip = paste0('<a style = \"margin-right:', max(max(nchar(track_name), nchar(artist_name)) * 9, 110), 'px\">',
                                 '<img src=', album_img, ' height=\"50\" style=\"float:left;margin-right:5px\">',
                                 '<b>Track:</b> ', track_name,
                                 '<br><b>Artist:</b> ', artist_name,
-                                '<br><b>Playlist:</b> ', playlist_name,
                                 '<br><b>Valence:</b> ', valence,
                                 '<br><b>Energy:</b> ', energy)) %>% 
         ungroup %>% 
@@ -276,8 +327,8 @@ playlist_quadrant_chart <- function(track_df) {
         hc_tooltip(formatter = JS(paste0("function() {return this.point.tooltip;}")), useHTML = T) %>%
         hc_xAxis(max = 1, min = 0, title = list(text = 'Valence')) %>%
         hc_yAxis(max = 1, min = 0, title = list(text = 'Energy')) %>%
-        hc_add_theme(hc_theme_smpl()) %>% 
-        hc_colors(my_colors) %>% 
+        hc_add_theme(hc_theme_rcharlie) %>% 
+        hc_colors(neon_colors) %>% 
         hc_yAxis(plotLines = list(list(
             value = .5,
             color = 'black',
@@ -296,8 +347,9 @@ playlist_quadrant_chart <- function(track_df) {
                       enableMouseTracking = FALSE,
                       zIndex = 0,
                       dataLabels = list(enabled = TRUE, y = 10, format = "{point.text}",
-                                        style = list(fontSize = "15px",
-                                                     color =  'rgba(0,0,0,0.70)'))
+                                        style = list(fontSize = "20px",
+                                                     color =  '#fff',
+                                                     textOutline = '0px'))
         )
 }
 
@@ -315,7 +367,7 @@ profile_bar_chart <- function(track_df, group_var_str) {
         hchart(hcaes(x = group_var, y = value, group = metric), type = 'bar') %>% 
         hc_xAxis(title = list(text = '')) %>% 
         hc_yAxis(title = list(text = ''), max = 1) %>% 
-        hc_add_theme(hc_theme_smpl())
+        hc_add_theme(hc_theme_rcharlie)
 }
 
 ############## both
@@ -331,12 +383,6 @@ artist_quadrant_chart <- function(track_df) {
     
     ds2 <- list_parse(df2)
     
-    if (n_distinct(track_df$album_name) > 21) {
-        my_colors <- tol21rainbow
-    } else {
-        my_colors <- sample(tol21rainbow, n_distinct(track_df$album_name))
-    }
-    
     track_df %>% 
         rowwise %>%
         mutate(tooltip = paste0('<a style = \"margin-right:', max(max(nchar(track_name), nchar(album_name)) * 9, 110), 'px\">',
@@ -350,8 +396,8 @@ artist_quadrant_chart <- function(track_df) {
         hc_tooltip(formatter = JS(paste0("function() {return this.point.tooltip;}")), useHTML = T) %>%
         hc_yAxis(max = 1, min = 0, title = list(text = 'Energy')) %>%
         hc_xAxis(max = 1, min = 0, title = list(text = 'Valence')) %>%
-        hc_add_theme(hc_theme_smpl()) %>% 
-        hc_colors(my_colors) %>% 
+        hc_add_theme(hc_theme_rcharlie) %>% 
+        hc_colors(neon_colors) %>% 
         hc_yAxis(plotLines = list(list(
             value = .5,
             color = 'black',
@@ -369,9 +415,10 @@ artist_quadrant_chart <- function(track_df) {
                       showInLegend = FALSE,
                       enableMouseTracking = FALSE,
                       zIndex = 0,
-                      dataLabels = list(enabled = TRUE, y = 10, format = '{point.text}',
-                                        style = list(fontSize = '15px',
-                                                     color =  'rgba(0,0,0,0.70)'))
+                      dataLabels = list(enabled = TRUE, y = 10, format = "{point.text}",
+                                        style = list(fontSize = "20px",
+                                                     color =  '#fff',
+                                                     textOutline = '0px'))
         )
 }
 
@@ -416,7 +463,7 @@ sentiment_profile_chart <- function(track_df, group_var_str) {
     
     all_profiles %>% 
         hchart(hcaes(x = group_var, y = pct, group = sentiment), type = 'bar') %>% 
-        hc_add_theme(hc_theme_smpl()) %>% 
+        hc_add_theme(hc_theme_rcharlie) %>% 
         hc_xAxis(title = list(text = '')) %>% 
         hc_colors(c('red', 'green', 'lightblue', 'blue'))
 }

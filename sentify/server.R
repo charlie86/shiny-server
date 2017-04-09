@@ -75,7 +75,7 @@ shinyServer(function(input, output, session) {
             output$artist_plot <- renderUI({
                 
                 if (input$GetScreenWidth >= 800) {
-                    highchartOutput('artist_quadrant_chart', width = '775px', height = '700px')
+                    highchartOutput('artist_quadrant_chart', width = '820px', height = '700px')
                     # tabBox(
                     #     id = 'plots',
                     #     tabPanel('Sentiment Quadrants', highchartOutput('artist_quadrant_chart', width = '775px', height = '700px')),
@@ -176,7 +176,7 @@ shinyServer(function(input, output, session) {
             output$playlist_plot <- renderUI({
                 
                 if (input$GetScreenWidth >= 800) {
-                    highchartOutput('playlist_quadrant_chart', width = '775px', height = '700px')
+                    highchartOutput('playlist_quadrant_chart', width = '820px', height = '700px')
                     # tabBox(
                     #     id = 'plots',
                     #     tabPanel('Sentiment Quadrants', highchartOutput('playlist_quadrant_chart', width = '775px', height = '700px')),

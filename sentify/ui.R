@@ -5,6 +5,7 @@ shinyUI(fluidPage(
     useShinyjs(),
     tags$script(jscode),
     tags$style(appCSS),
+    tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'style.css')),
     
     navbarPage('Sentify',
                tabPanel('Artists',
@@ -43,6 +44,7 @@ shinyUI(fluidPage(
                                 uiOutput('playlist_plot')
                             )
                         )
-               )
+               ),
+               collapsible = T
     )
 ))
