@@ -246,19 +246,23 @@ get_playlist_tracks <- function(playlists) {
             
             res <- GET(playlists$playlist_tracks_url[x], query = list(access_token = access_token, limit = 100, offset = (100*y)-100)) %>% content %>% .$items
             
-            track_info <- map_df(1:length(res), function(z) {
-                if (!is.null(res[[z]]$track$id)) {
-                    list(
-                        playlist_name = playlists$playlist_name[x],
-                        playlist_img = playlists$playlist_img[x],
-                        track_name = res[[z]]$track$name,
-                        track_uri = res[[z]]$track$id,
-                        artist_name = res[[z]]$track$artists[[1]]$name,
-                        album_name = res[[z]]$track$album$name,
-                        album_img = ifelse(length(res[[z]]$track$album$images) > 0, res[[z]]$track$album$images[[1]]$url, '')
-                    )
-                }
-            })
+            if (length(res) == 0) {
+                track_info <- data.frame()
+            } else {
+                track_info <- map_df(1:length(res), function(z) {
+                    if (!is.null(res[[z]]$track$id)) {
+                        list(
+                            playlist_name = playlists$playlist_name[x],
+                            playlist_img = playlists$playlist_img[x],
+                            track_name = res[[z]]$track$name,
+                            track_uri = res[[z]]$track$id,
+                            artist_name = res[[z]]$track$artists[[1]]$name,
+                            album_name = res[[z]]$track$album$name,
+                            album_img = ifelse(length(res[[z]]$track$album$images) > 0, res[[z]]$track$album$images[[1]]$url, '')
+                        )
+                    }
+                })
+            }
         })
     })
 }
