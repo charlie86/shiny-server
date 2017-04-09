@@ -172,7 +172,10 @@ shinyServer(function(input, output, session) {
             
             output$playlist_plot <- renderUI({
                 
+                withProgress(message = 'Making plot', value = 0, {
+                
                 if (input$GetScreenWidth >= 800) {
+                    incProgress(.9)
                     highchartOutput('playlist_quadrant_chart', width = '820px', height = '700px')
                     # tabBox(
                     #     id = 'plots',
@@ -181,8 +184,10 @@ shinyServer(function(input, output, session) {
                     #     width = 9
                     #     )
                 } else {
+                    incProgress(.9)
                     highchartOutput('playlist_quadrant_chart')
                 }
+                })
             })
             
         })
