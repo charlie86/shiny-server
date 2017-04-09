@@ -113,7 +113,7 @@ shinyServer(function(input, output, session) {
                 stop('Type a user name or Spotify URI')
             }
             
-            user <<- str_replace(input$user, 'spotify:user:', '')
+            user <<- tolower(str_replace(input$user, 'spotify:user:', ''))
             user_info <<- GET(paste0(base_url, 'users/', user), query = list(access_token = access_token)) %>% content
             
             if (is.null(user_info$error)) {
