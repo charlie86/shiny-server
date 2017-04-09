@@ -7,7 +7,7 @@ shinyUI(fluidPage(
     tags$style(appCSS),
     tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'style.css')),
     
-    navbarPage('Sentify',
+    navbarPageWithText('Sentify',
                tabPanel('Artists',
                         
                         sidebarLayout(
@@ -45,7 +45,6 @@ shinyUI(fluidPage(
                                 uiOutput('playlist_plot')
                             )
                         )
-               ),
-               collapsible = T
+               ), text = HTML('<a href = "http://RCharlie.com" target = "_blank">RCharlie.com</a>')
     )
 ))

@@ -48,6 +48,11 @@
 	color: #828282 !important;
 }
 
+.navbar-text, .navbar-text>a {
+	float: right;
+	color: #fff !important;
+}
+
 .rect.highcharts-background {
 	fill: #000;
 }
