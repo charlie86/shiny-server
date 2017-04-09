@@ -15,6 +15,7 @@ shinyUI(fluidPage(
                                 textInput('artist_search', "Type an artist name", value = ''),
                                 uiOutput('select_artist_ui'),
                                 uiOutput('album_go_ui'),
+                                br(),
                                 uiOutput('albums_ui'),
                                 helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/" target="_blank">here</a> for more info on Spotify\'s API')))
                             ),

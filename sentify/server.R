@@ -54,11 +54,15 @@ shinyServer(function(input, output, session) {
     })
     
     observeEvent(input$tracks_go, {
-        ### "loading all tracks from selected albums..."
         
         withBusyIndicatorServer('tracks_go', {
+
+            artist_tracks <<- get_album_tracks(album_info)
             
-            track_info <<- get_tracks(artist_info[artist_info$artist_name == artist_name, ], album_info[album_info$album_name %in% input$albums, ])
+            artist_track_audio_features <<- get_track_audio_features(artist_tracks[artist_tracks$album_name %in% input$albums, ])
+            
+            track_info <<- artist_tracks %>%
+                left_join(artist_track_audio_features, by = 'track_uri')
             
             if (nrow(track_info) == 0) {
                 stop("Sorry, couldn't find any tracks for that artist's albums on Spotify.")
@@ -160,10 +164,7 @@ shinyServer(function(input, output, session) {
             
             track_df <<- playlist_tracks %>%
                 filter(playlist_name %in% input$playlist_selector) %>% 
-                left_join(playlist_track_audio_features, by = 'track_uri') %>%
-                mutate_at(c('playlist_name', 'playlist_img', 'track_name', 'track_uri', 'artist_name', 'album_name', 'album_img'), funs(as.character)) %>%
-                mutate_at(c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
-                            'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature'), funs(as.numeric(gsub('[^0-9.-]+', '', as.character(.)))))
+                left_join(playlist_track_audio_features, by = 'track_uri')
             
             if (nrow(track_df) == 0) {
                 stop("Sorry, couldn't find any tracks for that user's playlists on Spotify.")

@@ -63,8 +63,6 @@ get_albums <- function(artist) {
     df <- map_df(1:length(albums$items), function(x) {
         tmp <- albums$items[[x]]
         
-        Sys.sleep(.1)
-        
         # Make sure the album_type is not "single"
         if (tmp$album_type == 'album' & gsub('spotify:artist:', '', tmp$artists[[1]]$uri) == artist) {
             data.frame(album_uri = tmp$uri %>% gsub('spotify:album:', '', .),
@@ -101,66 +99,27 @@ get_albums <- function(artist) {
     return(df)
 }
 
-get_tracks <- function(artist_info, album_info) {
-    
-    # You'll have to set up a dev account with Spotify here:
-    client_id <- 'c857dcec62a74825985e4749ef531abe'
-    client_secret <- '54af922e8c7a44f28eb339adb0f23656'
-    access_token <- POST('https://accounts.spotify.com/api/token',
-                         accept_json(), authenticate(client_id, client_secret),
-                         body = list(grant_type='client_credentials'),
-                         encode = 'form', httr::config(http_version=2)) %>% content %>% .$access_token
-    
-    if (nrow(album_info) > 0) {
+get_album_tracks <- function(albums) {
+    map_df(1:nrow(albums), function(x) {
+        url <- paste0('https://api.spotify.com/v1/albums/', albums$album_uri[x], '/tracks')
         
-        track_info <- map_df(album_info$album_uri, function(x) {
-            tracks <- GET(paste0('https://api.spotify.com/v1/albums/', x, '/tracks')) %>% 
-                content %>% 
-                .$items 
-            
-            Sys.sleep(.1)
-            
-            uris <- map(1:length(tracks), function(z) {
-                gsub('spotify:track:', '', tracks[z][[1]]$uri)
-            }) %>% unlist %>% paste0(collapse=',')
-            
-            res <- GET(paste0('https://api.spotify.com/v1/audio-features/?ids=', uris),
-                       query = list(access_token = access_token)) %>% content %>% .$audio_features
-            
-            audio_features <- c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'id', 'duration_ms', 'time_signature')
-            
-            df <- map_df(1:length(res), function(i) {
-                tmp <- map(audio_features, function(j) {
-                    ifelse(is.null(res[[i]][[j]]), NA, res[[i]][[j]])
-                })
-                names(tmp) <- audio_features
-                tmp
+        res <- GET(url) %>% content %>% .$items
+        
+        if (length(res) == 0) {
+            track_info <- data.frame()
+        } else {
+            track_info <- map_df(1:length(res), function(z) {
+                if (!is.null(res[[z]]$id)) {
+                    list(
+                        album_name = albums$album_name[x],
+                        album_img = albums$album_img[x],
+                        track_name = res[[z]]$name,
+                        track_uri = res[[z]]$id
+                    )
+                }
             })
-            
-            df <- df %>% 
-                mutate(album_uri = x,
-                       track_number = row_number()) %>% 
-                rowwise %>% 
-                mutate(track_name = tracks[[track_number]]$name) %>%
-                ungroup %>% 
-                left_join(album_info, by = 'album_uri') %>% 
-                rename(track_uri = id) 
-            return(df)
-        }) 
-        
-        
-        if (nrow(track_info) > 0) {
-            track_info <- track_info %>%
-                mutate(artist_name = as.character(artist_info$artist_name),
-                       artist_img = artist_info$artist_img) %>% 
-                mutate_at(c('album_uri', 'track_uri', 'album_release_date', 'track_name', 'album_name', 'artist_img'), funs(as.character)) %>%
-                mutate_at(c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'album_release_year',
-                            'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature', 'track_number'), funs(as.numeric(gsub('[^0-9.-]+', '', as.character(.))))) # for some reason parse_number() from readr doesn't work here
         }
-        return(track_info)
-    } else {
-        return(data.frame())
-    }   
+    })
 }
 
 album_feature_chart <- function(df, feature) {
@@ -267,6 +226,11 @@ get_playlist_tracks <- function(playlists) {
     })
 }
 
+# get_artists('radiohead')
+# albums <- get_albums('4Z8W4fKeB5YxbusRsdQVPb')
+# album_tracks <- get_album_tracks(albums)
+# tracks <- get_track_audio_features(album_tracks)
+
 get_track_audio_features <- function(tracks) {
     map_df(1:ceiling(nrow(tracks %>% filter(!duplicated(track_uri))) / 100), function(x) {
         uris <- tracks %>%
@@ -285,7 +249,9 @@ get_track_audio_features <- function(tracks) {
         names(df) <- names(res[[1]])
         df
     }) %>% select(-c(type, uri, track_href, analysis_url)) %>%
-        rename(track_uri = id)
+        rename(track_uri = id) %>% 
+        mutate_at(c('danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
+                    'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature'), funs(as.numeric(gsub('[^0-9.-]+', '', as.character(.)))))
 }
 
 
