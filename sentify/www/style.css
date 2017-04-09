@@ -12,6 +12,7 @@
 	background-color: #000 !important;
 	margin-bottom: 0px;
 	padding-left: 10px;
+	padding-right: 10px;
 	border: None;
 }
 
@@ -27,6 +28,7 @@
 .tab-content {
 	padding-top: 10px;
 	padding-left: 10px;
+	padding-right: 10px;
 	background-color: #828282 !important;
 }
 
