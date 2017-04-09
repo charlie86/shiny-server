@@ -62,7 +62,7 @@ shinyServer(function(input, output, session) {
             artist_track_audio_features <<- get_track_audio_features(artist_tracks[artist_tracks$album_name %in% input$albums, ])
             
             track_info <<- artist_tracks %>%
-                left_join(artist_track_audio_features, by = 'track_uri')
+                inner_join(artist_track_audio_features, by = 'track_uri')
             
             if (nrow(track_info) == 0) {
                 stop("Sorry, couldn't find any tracks for that artist's albums on Spotify.")
@@ -72,10 +72,6 @@ shinyServer(function(input, output, session) {
                 artist_quadrant_chart(track_info)
             })
             
-            # output$artist_profile_chart <- renderHighchart({
-            #     sentiment_profile_chart(track_info, 'album_name')
-            # })
-            
             output$artist_plot <- renderUI({
                 
                 withProgress(message = 'Making plot', value = 0, {
@@ -83,12 +79,6 @@ shinyServer(function(input, output, session) {
                     if (input$GetScreenWidth >= 800) {
                         incProgress(.9)
                         highchartOutput('artist_quadrant_chart', width = '820px', height = '700px')
-                        # tabBox(
-                        #     id = 'plots',
-                        #     tabPanel('Sentiment Quadrants', highchartOutput('artist_quadrant_chart', width = '775px', height = '700px')),
-                        #     tabPanel('Playlist Profile', highchartOutput('artist_profile_chart', width = '775px', height = '700px')),
-                        #     width = 9
-                        # )
                     } else {
                         incProgress(.9)
                         highchartOutput('artist_quadrant_chart')
@@ -152,11 +142,10 @@ shinyServer(function(input, output, session) {
             
             playlist_tracks <- get_playlist_tracks(playlists)
             
-            playlist_track_audio_features <- get_track_audio_features(playlist_tracks)
+            playlist_track_audio_features <- get_track_audio_features(playlist_tracks[playlist_tracks$playlist_name %in% input$playlist_selector, ])
             
             track_df <<- playlist_tracks %>%
-                filter(playlist_name %in% input$playlist_selector) %>% 
-                left_join(playlist_track_audio_features, by = 'track_uri')
+                inner_join(playlist_track_audio_features, by = 'track_uri')
             
             if (nrow(track_df) == 0) {
                 stop("Sorry, couldn't find any tracks for that user's playlists on Spotify.")
@@ -166,27 +155,17 @@ shinyServer(function(input, output, session) {
                 playlist_quadrant_chart(track_df)
             })
             
-            # output$playlist_profile_chart <- renderHighchart({
-            #     sentiment_profile_chart(track_df, 'playlist_name')
-            # })
-            
             output$playlist_plot <- renderUI({
                 
                 withProgress(message = 'Making plot', value = 0, {
-                
-                if (input$GetScreenWidth >= 800) {
-                    incProgress(.9)
-                    highchartOutput('playlist_quadrant_chart', width = '820px', height = '700px')
-                    # tabBox(
-                    #     id = 'plots',
-                    #     tabPanel('Sentiment Quadrants', highchartOutput('playlist_quadrant_chart', width = '775px', height = '700px')),
-                    #     tabPanel('Playlist Profile', highchartOutput('playlist_profile_chart', width = '775px', height = '700px')),
-                    #     width = 9
-                    #     )
-                } else {
-                    incProgress(.9)
-                    highchartOutput('playlist_quadrant_chart')
-                }
+                    
+                    if (input$GetScreenWidth >= 800) {
+                        incProgress(.9)
+                        highchartOutput('playlist_quadrant_chart', width = '820px', height = '700px')
+                    } else {
+                        incProgress(.9)
+                        highchartOutput('playlist_quadrant_chart')
+                    }
                 })
             })
             

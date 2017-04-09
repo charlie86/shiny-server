@@ -28,14 +28,14 @@ shinyUI(fluidPage(
                         sidebarLayout(
                             sidebarPanel(
                                 textInput('user', 'Enter a User\'s Spotify URI', placeholder = 'e.g. barackobama'),
-                                actionButton('tutorial_go', 'Where do I find my Spotify URI?'),
-                                br(), br(),
-                                bsModal('modalExample', 'Where to find your Spotify URI (Desktop only)', 'tutorial_go', size = 'large', htmlOutput('uri_gif')),
                                 withBusyIndicatorUI(
                                     actionButton('user_go', 'Search for user', class = 'btn-primary')
                                 ),
                                 htmlOutput('user'),
                                 uiOutput('select_playlist_ui'),
+                                br(),
+                                bsModal('modalExample', 'Where to find your Spotify URI (Desktop only)', 'tutorial_go', size = 'large', htmlOutput('uri_gif')),
+                                actionButton('tutorial_go', 'Where do I find my Spotify URI?'),
                                 helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/" target="_blank">here</a> for more info on Spotify\'s API')))
                             ),
                             mainPanel(
