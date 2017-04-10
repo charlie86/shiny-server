@@ -14,9 +14,20 @@ shinyServer(function(input, output, session) {
     })
     
     observeEvent(input$select_artist, {
-        
-        ### "searching for artists..."
         artist_name <<- input$select_artist
+        
+        if (exists('artist_info')) {
+            
+            if (nrow(artist_info) > 0) {
+                
+                artist_img <<- ifelse(!is.na(artist_info$artist_img[artist_info$artist_name == artist_name]), artist_info$artist_img[artist_info$artist_name == artist_name], 'https://pbs.twimg.com/profile_images/509949472139669504/IQSh7By1_400x400.jpeg')
+                
+                output$artist_img <- renderText({
+                    HTML(paste0('<img src=', artist_img, ' height="200">'))
+                })
+            }
+        }
+        
         output$album_go_ui <- renderUI({
             withBusyIndicatorUI(
                 actionButton('album_go', 'Get albums', class = 'btn-primary')

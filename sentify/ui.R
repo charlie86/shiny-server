@@ -14,6 +14,8 @@ shinyUI(fluidPage(
                             sidebarPanel(
                                 textInput('artist_search', "Type an artist name", value = ''),
                                 uiOutput('select_artist_ui'),
+                                htmlOutput('artist_img'),
+                                br(),
                                 uiOutput('album_go_ui'),
                                 br(),
                                 uiOutput('albums_ui'),
