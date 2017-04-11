@@ -1,5 +1,12 @@
 shinyServer(function(input, output, session) {
     
+    client_id <<- 'c857dcec62a74825985e4749ef531abe'
+    client_secret <<- '54af922e8c7a44f28eb339adb0f23656'
+    access_token <<- POST('https://accounts.spotify.com/api/token',
+                         accept_json(), authenticate(client_id, client_secret),
+                         body = list(grant_type='client_credentials'),
+                         encode = 'form', httr::config(http_version=2)) %>% content %>% .$access_token
+    
     observe({
         output$screenwidth <- renderText({
             input$GetScreenWidth
