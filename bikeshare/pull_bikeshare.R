@@ -10,6 +10,8 @@ conn <- dbConnect(MySQL(),
                   dbname = 'rcharlie',
                   host = "rcharlie.ch74fm7hgclb.us-west-2.rds.amazonaws.com")
 
+
+
 res <- GET('https://www.capitalbikeshare.com/data/stations/bikeStations.xml') %>% xmlParse %>% xmlToList
 
 bikeshare_stations <- map_df(seq_len(length(res) - 1), function(x) {
