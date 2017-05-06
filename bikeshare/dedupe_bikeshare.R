@@ -4,8 +4,6 @@ library(zoo)
 library(lubridate)
 library(stringr)
 
-setwd('C:/Users/Charlie/Documents/Side Projects/midnight barber/shiny-server/bikeshare/')
-
 conn <- dbConnect(MySQL(), 
                   user = 'rcharlie',
                   password = 'charlie86', 
