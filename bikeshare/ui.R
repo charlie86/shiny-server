@@ -14,7 +14,7 @@ dashboardPage(
             
             column(9,
                    uiOutput('boxes'),
-                   plotOutput('bike_plot')
+                   highchartOutput('bike_plot')
             )
         )
     )

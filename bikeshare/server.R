@@ -1,15 +1,14 @@
 shinyServer(function(input, output, session) {
-    output$bike_map <- renderLeaflet(
         leaflet() %>%
+            addTiles() %>% 
             setView(lat = 38.8983, lng = -77.0281, zoom = 14) %>%
-            addTiles() %>%
-            addMarkers(lng = stations$longitude, lat = stations$latitude, popup = stations$name, layerId = stations$station_id, icon = bike_icon)
-        # addMarkers(lng = stations$longitude, lat = stations$latitude, popup = stations$name, icon = bike_icon)
+            addPolygons(data = geojson_raw, fillOpacity = 1, fill = NULL, color = 'black', opacity = 1, weight = 1) %>% 
+            addCircles(lng = stations$longitude, lat = stations$latitude, popup = stations$tooltip, layerId = stations$station_id)
     )
     
     observeEvent(input$bike_map_marker_click, {
         
-        selected_station <- input$bike_map_marker_click
+        selected_station <<- input$bike_map_marker_click
         
         output$station_name_text <- renderText({
             stations$name[stations$station_id == selected_station$id]
@@ -17,8 +16,8 @@ shinyServer(function(input, output, session) {
         
         output$boxes <- renderUI({
             tagList(
-                valueBox(res$bikes[res$station_id == selected_station$id], 'Bikes Right Now', icon = icon('bicycle')),
-                valueBox(max(res$last_updated), 'Estimated Time to Empty', icon = icon('clock-o'))
+                valueBox(snapshot$nbBikes[snapshot$terminalName == selected_station$id], 'Bikes Right Now', icon = icon('bicycle')),
+                valueBox(Sys.Date(), 'Estimated Time to Empty', icon = icon('clock-o'))
             )
         })
         
@@ -33,7 +32,7 @@ shinyServer(function(input, output, session) {
                                     INNER JOIN bikeshare_deduped bd
                                         ON bsl.station_id = bd.station_id
                                     WHERE bsl.station_id = '", selected_station$id, "';"))
-                                    # WHERE bsl.station_id = '", 31296, "';"))
+                                    # WHERE bsl.station_id = '", 31285, "';"))
         
         days_of_week <- c('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')
         
@@ -42,7 +41,7 @@ shinyServer(function(input, output, session) {
                    mytime = round(hour(mytime) + (minute(mytime)/60), 2))
         
         graph_df <- res %>% 
-            mutate(last_updated_og = as.POSIXct(last_updated) - hours(4),
+            mutate(last_updated_og = as.POSIXct(last_updated, tz = '', format = '%Y-%m-%d %H:%M:%S') - hours(4),
                    last_updated = strftime(round(last_updated_og, 'mins'))) %>% 
             group_by(last_updated) %>%
             filter(last_updated_og == max(last_updated_og)) %>%
@@ -65,22 +64,32 @@ shinyServer(function(input, output, session) {
             group_by(date) %>% 
             slice(min(which(!is.na(bikes))):n_distinct(mytime)) %>% 
             mutate_all(funs(na.locf(.))) %>% 
-            ungroup
+            group_by(mytime)
         
         gg_df <- graph_df %>%
             filter(mytime >= hour(Sys.time()) - 2, mytime <= hour(Sys.time()) + 2,
-                   weekday == weekdays(Sys.time()))
+                   weekday == weekdays(Sys.time())) %>% 
+            group_by(mytime) %>% 
+            summarise(median = median(bikes),
+                      mean = mean(bikes))
         
-        output$bike_plot <- renderPlot({            
-            ggplot() +
-                geom_line(aes(x = mytime, y = bikes, group = date), data = gg_df %>% filter(date != Sys.Date())) +
-                geom_line(aes(x = mytime, y = bikes), color = 'blue', data = gg_df %>% filter(date == Sys.Date())) +
-                geom_point(aes(x = mytime, y = bikes), data = gg_df %>% filter(date == Sys.Date()) %>% filter(mytime == max(mytime))) +
-                theme_tufte()        
+        output$bike_plot <- renderHighchart({            
+            # ggplot() +
+            #     geom_line(data = gg_df, aes(x = mytime, y = median)) +
+            #     geom_point(data = snapshot %>% filter(terminalName == selected_station$id), aes(x = round(hour(lastCommWithServer) + (minute(lastCommWithServer) / 60), 2), y = nbBikes), color = 'blue', size = 3) +
+            #     theme_tufte()
+            
+            highchart() %>% 
+                hc_add_series(gg_df, hcaes(x = mytime, y = median), name = 'Historical Median', type = 'line') %>% 
+                hc_add_series(snapshot %>% filter(terminalName == selected_station$id), name = 'Right Now', hcaes(x = round(lubridate::hour(lastCommWithServer) + (lubridate::minute(lastCommWithServer) / 60), 2), y = nbBikes), type = 'scatter',
+                              marker = list(symbol = fa_icon_mark('bicycle')),
+                              icon = fa_icon('bicycle')) %>% 
+                hc_tooltip(
+                    useHTML = TRUE,
+                    pointFormat = paste0("<span style=\"color:{series.color};\">{series.options.icon}</span>",
+                                         "{series.name}: <b>[{point.x}, {point.y}]</b><br/>")
+                )
         })
-        
-        
-
 
         # graph_df <- res %>% 
         #     mutate(last_updated = as.POSIXct(last_updated) - hours(4),

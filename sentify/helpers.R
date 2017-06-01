@@ -47,9 +47,9 @@ hc_theme_rcharlie <- hc_theme_merge(
     )
 )
 get_artists <- function(artist_name) {
-    
+
     # Search Spotify API for artist name
-    res <- GET('https://api.spotify.com/v1/search', query = list(q = artist_name, type = 'artist')) %>%
+    res <- GET('https://api.spotify.com/v1/search', query = list(q = artist_name, type = 'artist', access_token = access_token)) %>%
         content %>% .$artists %>% .$items
     
     # Clean response and combine all returned artists into a dataframe
@@ -66,7 +66,7 @@ get_artists <- function(artist_name) {
 
 get_albums <- function(artist) {
     
-    albums <- GET(paste0('https://api.spotify.com/v1/artists/', artist,'/albums'), query = list(limit = 50)) %>% content
+    albums <- GET(paste0('https://api.spotify.com/v1/artists/', artist,'/albums'), query = list(limit = 50, access_token = access_token)) %>% content
     
     df <- map_df(1:length(albums$items), function(x) {
         tmp <- albums$items[[x]]
@@ -77,7 +77,7 @@ get_albums <- function(artist) {
                        album_name = gsub('\'', '', tmp$name),
                        album_img = ifelse(length(albums$items[[x]]$images) > 0, albums$items[[x]]$images[[1]]$url, NA),
                        stringsAsFactors = F) %>%
-                mutate(album_release_date = GET(paste0('https://api.spotify.com/v1/albums/', tmp$uri %>% gsub('spotify:album:', '', .))) %>% content %>% .$release_date,
+                mutate(album_release_date = GET(paste0('https://api.spotify.com/v1/albums/', tmp$uri %>% gsub('spotify:album:', '', .)), query = list(access_token = access_token)) %>% content %>% .$release_date,
                        album_release_year = as.Date(ifelse(nchar(album_release_date) == 4, as.Date(paste0(year(as.Date(album_release_date, '%Y')), '-01-01')), as.Date(album_release_date, '%Y-%m-%d')), origin = '1970-01-01')
                 )
         } else {
@@ -111,7 +111,7 @@ get_album_tracks <- function(albums) {
     map_df(1:nrow(albums), function(x) {
         url <- paste0('https://api.spotify.com/v1/albums/', albums$album_uri[x], '/tracks')
         
-        res <- GET(url) %>% content %>% .$items
+        res <- GET(url, query = list(access_token = access_token)) %>% content %>% .$items
         
         if (length(res) == 0) {
             track_info <- data.frame()

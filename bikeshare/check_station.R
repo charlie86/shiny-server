@@ -15,31 +15,34 @@ conn <- dbConnect(MySQL(),
                   dbname = 'rcharlie',
                   host = "rcharlie.ch74fm7hgclb.us-west-2.rds.amazonaws.com")
 
-# df_raw <- dbGetQuery(conn, "select * from bikeshare_stations where name = 'Columbia Rd & Belmont St NW'")
-# dbGetQuery(conn, "select count(*) from bikeshare_stations")
-# dbGetQuery(conn, "select max(lastCommWithServer) from bikeshare_stations")
-
-dbSendQuery(conn, "DROP TABLE IF EXISTS bikeshare_station_lookup;")
-dbSendQuery(conn, "
-CREATE TABLE bikeshare_station_lookup (
-    station_id INT,
-    name VARCHAR(50),
-    latitude FLOAT,
-    longitude FLOAT,
-    last_updated TIMESTAMP,
-    last_comm_with_server TIMESTAMP);")
-
-dbSendQuery(conn, "
-INSERT INTO bikeshare_station_lookup
+stations <- dbGetQuery(conn, "
 SELECT 
-    `terminalName`
-    , `name`
-    , `lat`
-    , `long`
-    , max(`latestUpdateTime`)
-    , max(`lastCommWithServer`)
-FROM bikeshare_stations 
-GROUP BY 1,2,3,4;")
+                       `terminalName`
+                       , `name`
+                       , `lat`
+                       , `long`
+                       FROM bikeshare_stations 
+                       GROUP BY 1,2,3,4;")
+
+
+library(rgdal)
+geojson_raw <- readOGR('neighorhoods.geojson.txt', 'OGRGeoJSON')
+
+pointsDF <- stations %>% 
+    select(long, lat)
+
+# Convert pointsDF to a SpatialPoints object 
+pointsSP <- SpatialPoints(pointsDF, 
+                          proj4string=CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+
+# Use 'over' to get _indices_ of the Polygons object containing each point 
+indices <- over(pointsSP, geojson_raw)
+stations$neighborhood <- indices$subhood
+stations$quadrant <- indices$quadrant
+stations <- stations %>% 
+    rename(station_id = terminalName, station_name = name)
+
+dbWriteTable(conn, 'bikeshare_station_lookup', stations, overwrite = T)
 
 dbSendQuery(conn, "DROP TABLE IF EXISTS bikeshare_deduped;")
 dbSendQuery(conn, "
@@ -61,12 +64,15 @@ FROM bikeshare_stations;")
 
 dbGetQuery(conn, 'select count(*) from bikeshare_deduped')
 
+
+
 station_name = 'Columbia Rd & Belmont St NW'
 dbGetQuery(conn, "select * from bikeshare_station_lookup where name = 'Columbia Rd & Belmont St NW'")
 test <- dbGetQuery(conn, paste0("
 SELECT
     bsl.station_id
-    , bsl.name AS station_name
+    , bsl.station_name
+    , bsl.neighborhood
     , bd.bikes
     , bd.docks
     , bd.last_updated
@@ -75,8 +81,6 @@ INNER JOIN bikeshare_deduped bd
     ON bsl.station_id = bd.station_id
 WHERE bsl.station_id = '", 31113, "';"))
 
-head(test)
-head(test)
 library(ggthemes)
 test %>% 
     mutate(last_updated = as.POSIXct(last_updated)) %>% 
@@ -128,7 +132,6 @@ plot(forecast(fit, 60))
 accuracy(fit)
 
 mydf %>% 
-    filter(weekday == 'Monday') %>%
     filter(mytime <= 10, mytime >= 6) %>%
     group_by(weekday, weekday_num, mytime) %>% 
     summarise(bikes = median(bikes)) %>% 

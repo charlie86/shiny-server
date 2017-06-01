@@ -14,11 +14,11 @@ dbSendQuery(conn, "DROP TABLE IF EXISTS bikeshare_station_lookup;")
 dbSendQuery(conn, "
             CREATE TABLE bikeshare_station_lookup (
             station_id INT,
-            name VARCHAR(50),
-            latitude FLOAT,
-            longitude FLOAT,
-            last_updated TIMESTAMP,
-            last_comm_with_server TIMESTAMP);")
+            station_name VARCHAR(50),
+            lat FLOAT,
+            long FLOAT,
+            neighborhood VARCHAR,
+            quadrant VARCHAR);")
 
 dbSendQuery(conn, "
             INSERT INTO bikeshare_station_lookup
