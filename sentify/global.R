@@ -14,6 +14,7 @@ library(lubridate)
 library(lazyeval)
 library(ggplot2)
 library(ggthemes)
+library(spotifyr)
 library(plotly)
 library(DT)
 
