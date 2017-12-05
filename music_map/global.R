@@ -7,6 +7,7 @@ library(shinydashboard)
 
 load('data/countries.RData')
 load('data/country_features.RData')
+load('data/geo_tracks.RData')
 
 feature_vars <- c('danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms')
 

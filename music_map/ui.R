@@ -2,6 +2,7 @@ fluidPage(
     tags$head(tags$link(rel = 'icon', type = 'image/png', href = 'green_music_note.png'),
               tags$title('Music map')),
     tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'style.css')),
+    uiOutput('music'),
     navbarPageWithText('Music map',
                        tabPanel('Map',
                                 
