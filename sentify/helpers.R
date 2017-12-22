@@ -126,10 +126,10 @@ playlist_quadrant_chart <- function(track_df) {
     
     df2 <- data.frame(x = c(0, 1, 0, 1),
                       y = c(1, 1, 0, 0),
-                      text = c('Angry',
-                               'Happy',
-                               'Sad',
-                               'Peaceful'))
+                      text = c('Turbulent/Angry',
+                               'Happy/Joyful',
+                               'Sad/Depressing',
+                               'Chill/Peaceful'))
     
     ds2 <- list_parse(df2)
     
@@ -195,10 +195,10 @@ artist_quadrant_chart <- function(track_df) {
     
     df2 <- data.frame(x = c(0, 1, 0, 1),
                       y = c(1, 1, 0, 0),
-                      text = c('Angry',
-                               'Happy',
-                               'Sad',
-                               'Peaceful'))
+                      text = c('Turbulent/Angry',
+                               'Happy/Joyful',
+                               'Sad/Depressing',
+                               'Chill/Peaceful'))
     
     ds2 <- list_parse(df2)
     
@@ -247,15 +247,15 @@ classify_track_sentiment <- function(valence, energy) {
     }
     else if (valence >= .5) {
         if (energy >= .5) {
-            return('Happy')
+            return('Happy/Joyful')
         } else {
-            return('Peaceful')
+            return('Chill/Peaceful')
         }
     } else {
         if (energy >= .5) {
-            return('Angry')
+            return('Turbulent/Angry')
         } else {
-            return('Sad')
+            return('Sad/Depressing')
         }
     }
 }
@@ -360,3 +360,233 @@ margin-top: 10px;
 color: red;
 }
 '
+
+##########
+hc_add_event_point <- function(hc, series = "series", event = "click"){
+    
+    fun <- paste0("function(){
+                  var pointinfo = {series: this.series.name, seriesid: this.series.id,
+                  name: this.name, x: this.x, y: this.y, category: this.category.name}
+                  window.x = this;
+                  console.log(pointinfo);
+                  
+                  if (typeof Shiny != 'undefined') { Shiny.onInputChange(this.series.chart.renderTo.id + '_' + '", event, "', pointinfo); }
+}")
+
+    fun <- JS(fun)
+    
+    eventobj <- structure(
+        list(structure(
+            list(structure(
+                list(structure(
+                    list(fun),
+                    .Names = event)
+                ),
+                .Names = "events")
+            ),
+            .Names = "point")
+        ),
+        .Names = series
+    )
+    
+    hc$x$hc_opts$plotOptions <- rlist::list.merge(
+        hc$x$hc_opts$plotOptions,
+        eventobj
+    )
+    
+    hc
+    
+    }
+
+hc_add_event_series <- function(hc, series = "series", event = "click"){
+    
+    fun <- paste0("function(){
+                  var seriesinfo = {name: this.name }
+                  console.log(seriesinfo);
+                  window.x = this;
+                  if (typeof Shiny != 'undefined') { Shiny.onInputChange(this.chart.renderTo.id + '_' + '", event, "', seriesinfo); }
+                  
+}")
+  fun <- JS(fun)
+  
+  eventobj <- structure(
+      list(structure(
+          list(structure(
+              list(fun),
+              .Names = event)
+          ),
+          .Names = "events")
+      ),
+      .Names = series
+  )
+  
+  hc$x$hc_opts$plotOptions <- rlist::list.merge(
+      hc$x$hc_opts$plotOptions,
+      eventobj
+  )
+  
+  hc
+  
+  }
+
+hc_elementId <- function(hc, id = NULL) {
+    
+    assertthat::assert_that(is.highchart(hc))
+    
+    hc$elementId <- as.character(id)
+    
+    hc
+}
+
+hc_size <- function(hc, width = NULL, height = NULL) {
+    
+    assertthat::assert_that(is.highchart(hc))
+    
+    if (!is.null(width))
+        hc$width <- width
+    
+    if (!is.null(height))
+        hc$height <- height
+    
+    hc
+    
+}
+
+.hc_tooltip_table <- function(hc, ...) {
+    # http://stackoverflow.com/a/22327749/829971
+    hc %>%
+        highcharter::hc_tooltip(
+            shared = TRUE,
+            useHTML = TRUE,
+            headerFormat = "<small>{point.key}</small><table>",
+            pointFormat = "<tr><td style=\"color: {series.color}\">{series.name}: </td><td style=\"text-align: right\"><b>{point.y}</b></td></tr>",
+            footerFormat = "</table>"
+        )
+}
+
+.hc_tooltip_sort <- function(hc, ...) {
+    # http://stackoverflow.com/a/16954666/829971
+    hc %>%
+        highcharter::hc_tooltip(
+            shared = TRUE,
+            formatter = JS(
+                "function(tooltip){
+                function isArray(obj) {
+                return Object.prototype.toString.call(obj) === '[object Array]';
+                }
+                
+                function splat(obj) {
+                return isArray(obj) ? obj : [obj];
+                }
+                
+                var items = this.points || splat(this), series = items[0].series, s;
+                
+                // sort the values
+                items.sort(function(a, b){
+                return ((a.y < b.y) ? -1 : ((a.y > b.y) ? 1 : 0));
+                });
+                items.reverse();
+                
+                return tooltip.defaultFormatter.call(this, tooltip);
+}"))
+
+    }
+
+tooltip_chart <- function(
+    accesor = NULL,
+    hc_opts = NULL,
+    width = 250,
+    height = 150
+) {
+    
+    assertthat::assert_that(assertthat::is.string(accesor))
+    
+    if(is.null(hc_opts)) {
+        hc_opts[["series"]][[1]] <- list(data =  sprintf("point.%s", accesor))
+    } else {
+        if(!has_name(hc_opts, "series"))
+            hc_opts[["series"]][[1]] <- list()
+        hc_opts[["series"]][[1]][["data"]] <- sprintf("point.%s", accesor)
+    }
+    
+    hc_opts <- rlist::list.merge(
+        getOption("highcharter.chart")[c("title", "yAxis", "xAxis", "credits", "exporting")],
+        list(chart = list(backgroundColor = "transparent")),
+        list(legend = list(enabled = FALSE), plotOptions = list(series = list(animation = FALSE))),
+        hc_opts
+    )
+    
+    if(!has_name(hc_opts[["series"]][[1]], "color")) hc_opts[["series"]][[1]][["color"]] <- "point.color"
+    
+    hcopts <- toJSON(hc_opts, pretty = TRUE, auto_unbox = TRUE, force = TRUE, null = "null", na = "null")
+    hcopts <- as.character(hcopts)
+    # cat(hcopts)
+    
+    # fix point.color
+    hcopts <- str_replace(hcopts, "\\{point.color\\}", "point.color")
+    
+    # remove "\"" to have access to the point object
+    ts <- stringr::str_extract_all(hcopts, "\"point\\.\\w+\"") %>% unlist()
+    for(t in ts) hcopts <- str_replace(hcopts, t, str_replace_all(t, "\"", ""))
+    
+    # remove "\"" in the options
+    ts <- stringr::str_extract_all(hcopts, "\"\\w+\":") %>%  unlist()
+    for(t in ts) {
+        t2 <- str_replace_all(t, "\"", "")
+        # t2 <- str_replace(t2, ":", "")
+        hcopts <- str_replace(hcopts, t, t2)
+    }
+    # cat(hcopts)
+    
+    jss <- "function() {
+    var point = this;
+    console.log(point);
+    console.log(point.{{accesor}});
+    setTimeout(function() {
+    
+    $(\"#tooltipchart-{{id}}\").highcharts(hcopts);
+    
+    }, 0);
+    
+    return '<div id=\"tooltipchart-{{id}}\" style=\"width: {{w}}px; height: {{h}}px;\"></div>';
+    
+}"
+  # cat(jss)
+    
+    jsss <- whisker.render(
+        jss,
+        list(id = random_id(), w = width, h = height, accesor = accesor)
+    )
+    # cat(jsss)
+    
+    jsss <- stringr::str_replace(jsss, "hcopts", hcopts)
+    # cat(jsss)
+    
+    JS(jsss)
+    
+}
+
+tooltip_table <- function(x, y,
+                          title = NULL,
+                          img = NULL, ...) {
+    
+    assertthat::assert_that(length(x) == length(y))
+    
+    tbl <- map2(x, y, function(x, y){
+        tags$tr(
+            tags$th(x),
+            tags$td(y)
+        )
+    })
+    
+    tbl <- tags$table(tbl, ...)
+    
+    if (!is.null(title))
+        tbl <- tagList(title, tbl)
+    
+    if (!is.null(img))
+        tbl <- tagList(tbl, img)
+    
+    as.character(tbl)
+    
+}

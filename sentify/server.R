@@ -10,6 +10,7 @@ shinyServer(function(input, output, session) {
     
     observe({
         output$select_artist_ui <- renderUI({
+            req(input$artist_search)
             artist_info <<- get_artists(input$artist_search)
             selectInput('select_artist', 'Choose an artist from these matches on Spotify', choices = artist_info$artist_name)
         })
@@ -57,7 +58,9 @@ shinyServer(function(input, output, session) {
                                        selected = unique(album_info$album_name), multiple = T),
                         withBusyIndicatorUI(
                             actionButton('tracks_go', 'Get tracks and generate plot', class = 'btn-primary')
-                        )
+                        ),
+                        checkboxInput('artist_autoplay', 'Play song preview on hover'),
+                        uiOutput('artist_chart_song_ui')
                     )
                 })
             } else {
@@ -73,9 +76,11 @@ shinyServer(function(input, output, session) {
             artist_tracks <<- get_album_tracks(album_info)
             
             artist_track_audio_features <<- get_track_audio_features(artist_tracks[artist_tracks$album_name %in% input$albums, ])
+            artist_track_popularity <<- get_track_popularity(artist_tracks[artist_tracks$album_name %in% input$albums, ])
             
             track_info <<- artist_tracks %>%
                 inner_join(artist_track_audio_features, by = 'track_uri') %>% 
+                left_join(artist_track_popularity, by = 'track_uri') %>% 
                 left_join(album_info, by = 'album_name')
             
             if (nrow(track_info) == 0) {
@@ -83,7 +88,37 @@ shinyServer(function(input, output, session) {
             }
             
             output$artist_quadrant_chart <- renderHighchart({
-                artist_quadrant_chart(track_info)
+                artist_quadrant_chart(track_info) %>% 
+                    hc_add_event_point(event = 'mouseOver')
+            })
+            
+            output$artist_chart_song_ui <- renderUI({
+                
+                req(input$artist_quadrant_chart_mouseOver)
+                
+                if (input$artist_autoplay == TRUE) {
+                    
+                    artist_track_hover <- input$artist_quadrant_chart_mouseOver
+                    track_preview_url <- track_info %>% filter(
+                        album_name == artist_track_hover$series,
+                        valence == artist_track_hover$x,
+                        energy == artist_track_hover$y
+                    ) %>% select(track_preview_url) %>% .[[1]]
+                    
+                    if (!is.na(track_preview_url)) {
+                        tagList(
+                            tags$audio(id = 'song_preview', src = track_preview_url, type = 'audio/mp3', autoplay = NA, controls = NA),
+                            tags$script(JS("
+                                           myAudio=document.getElementById('song_preview');
+                                           myAudio.play();
+                                           "
+                            ))
+                        )
+                    } else {
+                        h5('No preview for this track on Spotify')
+                    }
+                    
+                }
             })
             
             output$artist_plot <- renderUI({
@@ -134,9 +169,12 @@ shinyServer(function(input, output, session) {
                         selectInput('playlist_selector', 'Choose playlists to include', choices = playlists$playlist_name, selected = playlists$playlist_name, multiple = T),
                         withBusyIndicatorUI(
                             actionButton('playlist_go', 'Get tracks and generate plot', class = 'btn-primary')
-                        )
+                        ),
+                        checkboxInput('playlist_autoplay', 'Play song preview on hover'),
+                        uiOutput('playlist_chart_song_ui')
                     )
                 })
+                
             } else {
                 stop("Sorry, couldn't find that user on Spotify.")
             }
@@ -157,16 +195,48 @@ shinyServer(function(input, output, session) {
             playlist_tracks <- get_playlist_tracks(playlists)
             
             playlist_track_audio_features <- get_track_audio_features(playlist_tracks[playlist_tracks$playlist_name %in% input$playlist_selector, ])
+            playlist_track_popularity <- get_track_popularity(playlist_tracks[playlist_tracks$playlist_name %in% input$playlist_selector, ])
             
             track_df <<- playlist_tracks %>%
-                inner_join(playlist_track_audio_features, by = 'track_uri')
+                inner_join(playlist_track_audio_features, by = 'track_uri') %>% 
+                left_join(playlist_track_popularity, by = 'track_uri')
             
             if (nrow(track_df) == 0) {
                 stop("Sorry, couldn't find any tracks for that user's playlists on Spotify.")
             }
             
             output$playlist_quadrant_chart <- renderHighchart({
-                playlist_quadrant_chart(track_df)
+                playlist_quadrant_chart(track_df) %>% 
+                    hc_add_event_point(event = 'mouseOver')
+            })
+            
+            output$playlist_chart_song_ui <- renderUI({
+                
+                req(input$playlist_quadrant_chart_mouseOver)
+                
+                if (input$playlist_autoplay == TRUE) {
+                
+                    playlist_track_hover <- input$playlist_quadrant_chart_mouseOver
+                    track_preview_url <- track_df %>% filter(
+                        playlist_name == playlist_track_hover$series,
+                        valence == playlist_track_hover$x,
+                        energy == playlist_track_hover$y
+                    ) %>% select(track_preview_url) %>% .[[1]]
+                    
+                    if (!is.na(track_preview_url)) {
+                        tagList(
+                            tags$audio(id = 'song_preview', src = track_preview_url, type = 'audio/mp3', autoplay = NA, controls = NA),
+                            tags$script(JS("
+                                           myAudio=document.getElementById('song_preview');
+                                           myAudio.play();
+                                           "
+                            ))
+                        )
+                    } else {
+                        h5('No preview for this track on Spotify')
+                    }
+                    
+                }
             })
             
             output$playlist_plot <- renderUI({
