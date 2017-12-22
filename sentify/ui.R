@@ -7,7 +7,7 @@ shinyUI(fluidPage(
     tags$style(appCSS),
     tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'style.css')),
     
-    navbarPageWithText('Sentify',
+    navbarPageWithText('Sentify', id = 'tabs',
                tabPanel('Artists',
                         
                         sidebarLayout(

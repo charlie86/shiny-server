@@ -94,9 +94,11 @@ shinyServer(function(input, output, session) {
             
             output$artist_chart_song_ui <- renderUI({
                 
+                if (input$tabs == 'Artists') {
                 req(input$artist_quadrant_chart_mouseOver)
                 
                 if (input$artist_autoplay == TRUE) {
+                    
                     
                     artist_track_hover <- input$artist_quadrant_chart_mouseOver
                     track_preview_url <- track_info %>% filter(
@@ -117,7 +119,7 @@ shinyServer(function(input, output, session) {
                     } else {
                         h5('No preview for this track on Spotify')
                     }
-                    
+                }
                 }
             })
             
@@ -212,6 +214,8 @@ shinyServer(function(input, output, session) {
             
             output$playlist_chart_song_ui <- renderUI({
                 
+                if (input$tabs == 'User Playlists') {
+                
                 req(input$playlist_quadrant_chart_mouseOver)
                 
                 if (input$playlist_autoplay == TRUE) {
@@ -235,7 +239,7 @@ shinyServer(function(input, output, session) {
                     } else {
                         h5('No preview for this track on Spotify')
                     }
-                    
+                }
                 }
             })
             
