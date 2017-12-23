@@ -99,7 +99,6 @@ shinyServer(function(input, output, session) {
                 
                 if (input$artist_autoplay == TRUE) {
                     
-                    
                     artist_track_hover <- input$artist_quadrant_chart_mouseOver
                     track_preview_url <- track_info %>% filter(
                         album_name == artist_track_hover$series,

@@ -2,6 +2,8 @@ shinyServer(function(input, output, session) {
     
     output$music_map <- renderLeaflet({
         
+        req(input$map_metric)
+        
         selected_map_metric <- 'valence'
         selected_map_metric <- input$map_metric
         
@@ -25,6 +27,8 @@ shinyServer(function(input, output, session) {
     
     output$map_title <- renderText({
         
+        req(input$map_metric)
+        
         selected_map_metric <- 'valence'
         selected_map_metric <- input$map_metric
         
@@ -33,16 +37,15 @@ shinyServer(function(input, output, session) {
     
     output$music <- renderUI({
         
+        req(input$music_map_shape_mouseover)
+        req(input$map_metric)
+        
         # mouseover_country <- 'ARG'
-        mouseover_country <- input$music_map_shape_mouseover
+        mouseover_country <<- input$music_map_shape_mouseover$id
         
         # selected_map_metric <- 'valence'
-        selected_map_metric <- input$map_metric
-        
-        if (!is.null(mouseover_country)) {
-            
-            test <<- country_features[[selected_map_metric]][country_features$iso3c == mouseover_country]
-        
+        selected_map_metric <<- input$map_metric
+
             country_track <- geo_tracks %>% 
                 filter(iso3c == mouseover_country, !is.na(track_preview_url)) %>%
                 mutate_('map_metric' = selected_map_metric) %>% 
@@ -62,10 +65,11 @@ shinyServer(function(input, output, session) {
                                "
                 ))
             )
-        }
     })
     
     output$feature_rank <- renderHighchart({
+        
+        req(input$map_metric)
         
         selected_map_metric <- 'valence'
         selected_map_metric <- input$map_metric

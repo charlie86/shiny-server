@@ -5,6 +5,8 @@ library(highcharter)
 library(glue)
 library(shinydashboard)
 
+rm(list = ls())
+
 load('data/countries.RData')
 load('data/country_features.RData')
 load('data/geo_tracks.RData')
