@@ -67,23 +67,30 @@ shinyServer(function(input, output, session) {
             )
     })
     
-    output$feature_rank <- renderHighchart({
-        
-        req(input$map_metric)
-        
-        selected_map_metric <- 'valence'
-        selected_map_metric <- input$map_metric
-        
-        country_features %>% 
-            ungroup %>% 
-            select(c('country', feature_vars)) %>% 
-            gather(metric, value, -country) %>% 
-            filter(metric == selected_map_metric) %>% 
-            arrange(-value) %>% 
-            mutate(value = round(value, 4)) %>% 
-            hchart(hcaes(x = country, y = value, group = metric), type = 'bar') %>% 
-            hc_xAxis(title = list(text = '')) %>% 
-            hc_yAxis(title = list(text = selected_map_metric), min = min(country_features[[selected_map_metric]]))
-        
+    output$flag <- renderText({
+        req(input$music_map_shape_mouseover)
+        mouseover_country <<- input$music_map_shape_mouseover$id
+        iso2c <- tolower(unique(geo_tracks$country_abb[geo_tracks$iso3c == mouseover_country]))
+        HTML(glue('<img src="country-flags/png250px/{iso2c}.png">'))
     })
+    
+    # output$feature_rank <- renderHighchart({
+    #     
+    #     req(input$map_metric)
+    #     
+    #     selected_map_metric <- 'valence'
+    #     selected_map_metric <- input$map_metric
+    #     
+    #     country_features %>% 
+    #         ungroup %>% 
+    #         select(c('country', feature_vars)) %>% 
+    #         gather(metric, value, -country) %>% 
+    #         filter(metric == selected_map_metric) %>% 
+    #         arrange(-value) %>% 
+    #         mutate(value = round(value, 4)) %>% 
+    #         hchart(hcaes(x = country, y = value, group = metric), type = 'bar') %>% 
+    #         hc_xAxis(title = list(text = '')) %>% 
+    #         hc_yAxis(title = list(text = selected_map_metric), min = min(country_features[[selected_map_metric]]))
+    #     
+    # })
 })
