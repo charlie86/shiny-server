@@ -4,12 +4,12 @@ shinyServer(function(input, output, session) {
         
         req(input$map_metric)
         
-        selected_map_metric <- 'valence'
-        selected_map_metric <- input$map_metric
+        # selected_map_metric <- 'valence'
+        selected_map_metric <<- input$map_metric
         
         if (!is.null(selected_map_metric)) {
             
-            pal <- colorNumeric('RdYlGn', countries[[selected_map_metric]], na.color = 'lightgrey')
+            pal <- colorNumeric('RdYlGn', as.data.frame(countries)[[selected_map_metric]], na.color = 'lightgrey')
             
             countries[['map_metric']] <- countries[[selected_map_metric]]
             
