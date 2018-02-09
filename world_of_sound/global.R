@@ -4,6 +4,7 @@ library(shiny)
 library(highcharter)
 library(glue)
 library(shinydashboard)
+library(countrycode)
 
 rm(list = ls())
 

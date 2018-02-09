@@ -1,20 +1,21 @@
 fluidPage(
     tags$head(tags$link(rel = 'icon', type = 'image/png', href = 'green_music_note.png'),
-              tags$title('Music map')),
+              tags$title('Sounds of the World')),
     tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'style.css')),
-    navbarPageWithText('Music map',
-                       tabPanel('Map',
+    navbarPageWithText('Sounds of the World',
+                       tabPanel('Country Explorer',
                                 sidebarLayout(
                                     sidebarPanel(
-                                        selectInput('map_metric', 'Choose an audio feature:', feature_vars),
+                                        h4('Click on a country to explore its music'),
+                                        leafletOutput('world_map'),
+                                        selectInput('world_map_metric', 'Color countries by:', feature_vars, width = '150px'),
                                         uiOutput('music'),
-                                        helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/" target="_blank">here</a> for more info on Spotify\'s API'))),
                                         htmlOutput('flag')
                                         # highchartOutput('feature_rank', height = '730')
                                     ),
                                     mainPanel(
-                                        h2(textOutput('map_title'), style = "color:white;margin-top:0px"),
-                                        leafletOutput('music_map', height = '800')
+                                        # h2(textOutput('map_title'), style = "color:white;margin-top:0px"),
+                                        
                                     )
                                 )
                        ),
