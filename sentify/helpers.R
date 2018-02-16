@@ -98,30 +98,6 @@ album_feature_chart <- function(df, feature) {
 }
 
 ############ playlists
-get_user_playlists <- function(user_str) {
-    user <- tolower(user_str)
-    base_url <- 'https://api.spotify.com/v1/'
-    user_search_query <- paste0(base_url, 'users/', user, '/playlists')    
-    user_playlists <- GET(user_search_query,
-                          query = list(access_token = access_token, limit = 50)) %>% content %>% .$items
-    
-    if (length(user_playlists) > 0) {
-        
-        playlist_df <- map_df(1:length(user_playlists), function(x) {
-            list(
-                playlist_name = user_playlists[[x]]$name,
-                playlist_img = user_playlists[[x]]$images[[1]]$url,
-                playlist_num_tracks = user_playlists[[x]]$tracks$total,
-                playlist_tracks_url = user_playlists[[x]]$tracks$href
-            )
-        })
-    } else {
-        playlist_df <- data.frame()
-    }
-    
-    return(playlist_df)
-}
-
 playlist_quadrant_chart <- function(track_df) {
     
     df2 <- data.frame(x = c(0, 1, 0, 1),

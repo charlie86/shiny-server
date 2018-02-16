@@ -1,6 +1,19 @@
 shinyServer(function(input, output, session) {
+
+    setBookmarkExclude(c('bookmark1', 'bookmark2'))
     
-    access_token <<- get_spotify_access_token()
+    observeEvent(input$bookmark1, {
+        session$doBookmark()
+    })
+    
+    observeEvent(input$bookmark2, {
+        session$doBookmark()
+    })
+    
+    spotify_access_token <- reactive({
+        get_spotify_access_token()
+    })
+    # access_token <<- get_spotify_access_token()
     
     observe({
         output$screenwidth <- renderText({
@@ -11,7 +24,7 @@ shinyServer(function(input, output, session) {
     observe({
         output$select_artist_ui <- renderUI({
             req(input$artist_search)
-            artist_info <<- get_artists(input$artist_search)
+            artist_info <<- get_artists(input$artist_search, access_token = spotify_access_token())
             selectInput('select_artist', 'Choose an artist from these matches on Spotify', choices = artist_info$artist_name)
         })
     })
@@ -47,7 +60,7 @@ shinyServer(function(input, output, session) {
             }
             
             ### "searching for albums..."
-            album_info <<- get_albums(artist_info$artist_uri[artist_info$artist_name == artist_name])
+            album_info <<- get_albums(artist_info$artist_uri[artist_info$artist_name == artist_name], access_token = spotify_access_token())
             
             if (nrow(album_info) > 0) {
                 
@@ -73,10 +86,9 @@ shinyServer(function(input, output, session) {
         
         withBusyIndicatorServer('tracks_go', {
             
-            artist_tracks <<- get_album_tracks(album_info)
-            
-            artist_track_audio_features <<- get_track_audio_features(artist_tracks[artist_tracks$album_name %in% input$albums, ])
-            artist_track_popularity <<- get_track_popularity(artist_tracks[artist_tracks$album_name %in% input$albums, ])
+            artist_tracks <<- get_album_tracks(album_info, access_token = spotify_access_token())
+            artist_track_audio_features <<- get_track_audio_features(artist_tracks[artist_tracks$album_name %in% input$albums, ], access_token = spotify_access_token())
+            artist_track_popularity <<- get_track_popularity(artist_tracks[artist_tracks$album_name %in% input$albums, ], access_token = spotify_access_token())
             
             track_info <<- artist_tracks %>%
                 inner_join(artist_track_audio_features, by = 'track_uri') %>% 
@@ -146,7 +158,7 @@ shinyServer(function(input, output, session) {
             }
             
             user <<- tolower(str_replace(input$user, 'spotify:user:', ''))
-            user_info <<- GET(paste0(base_url, 'users/', user), query = list(access_token = access_token)) %>% content
+            user_info <<- GET(paste0(base_url, 'users/', user), query = list(access_token = spotify_access_token())) %>% content
             
             if (is.null(user_info$error)) {
                 user_img <<- ifelse(length(user_info$images) > 0, user_info$images[[1]]$url, 'https://pbs.twimg.com/profile_images/509949472139669504/IQSh7By1_400x400.jpeg')
@@ -159,7 +171,7 @@ shinyServer(function(input, output, session) {
                     HTML(paste0('<img src=', user_img, ' height="200">', '<br/>', user_info$display_name))
                 })
                 
-                playlists <<- get_user_playlists(user)
+                playlists <<- get_user_playlists(user, access_token = spotify_access_token())
                 
                 if (nrow(playlists) == 0) {
                     stop("Sorry, that user doesn't have any playlists on Spotify.")
@@ -193,10 +205,10 @@ shinyServer(function(input, output, session) {
                 stop("You must select at least one playlist.")
             }
             
-            playlist_tracks <- get_playlist_tracks(playlists)
+            playlist_tracks <- get_playlist_tracks(playlists, access_token = spotify_access_token())
             
-            playlist_track_audio_features <- get_track_audio_features(playlist_tracks[playlist_tracks$playlist_name %in% input$playlist_selector, ])
-            playlist_track_popularity <- get_track_popularity(playlist_tracks[playlist_tracks$playlist_name %in% input$playlist_selector, ])
+            playlist_track_audio_features <- get_track_audio_features(playlist_tracks[playlist_tracks$playlist_name %in% input$playlist_selector, ], access_token = spotify_access_token())
+            playlist_track_popularity <- get_track_popularity(playlist_tracks[playlist_tracks$playlist_name %in% input$playlist_selector, ], access_token = spotify_access_token())
             
             track_df <<- playlist_tracks %>%
                 inner_join(playlist_track_audio_features, by = 'track_uri') %>% 

@@ -20,6 +20,8 @@ library(DT)
 
 source('helpers.R')
 
+enableBookmarking(store = "url")
+
 jscode <-
     '$(document).on("shiny:connected", function(e) {
   var jsWidth = screen.width;

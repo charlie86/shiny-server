@@ -1,4 +1,5 @@
-shinyUI(fluidPage(
+function(request) {
+    fluidPage(
     tags$head(tags$link(rel = 'icon', type = 'image/png', href = 'green_music_note.png'),
               tags$title('Sentify')),
     
@@ -19,6 +20,7 @@ shinyUI(fluidPage(
                                 uiOutput('album_go_ui'),
                                 br(),
                                 uiOutput('albums_ui'),
+                                bookmarkButton(id = 'bookmark1'),
                                 helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/" target="_blank">here</a> for more info on Spotify\'s API')))
                             ),
                             mainPanel(
@@ -38,6 +40,7 @@ shinyUI(fluidPage(
                                 br(),
                                 bsModal('modalExample', 'Where to find your Spotify URI (Desktop only)', 'tutorial_go', size = 'large', htmlOutput('uri_gif')),
                                 actionButton('tutorial_go', 'Where do I find my Spotify URI?'),
+                                bookmarkButton(id = 'bookmark2'),
                                 helpText(HTML(paste0('Click <a href="https://developer.spotify.com/web-api/" target="_blank">here</a> for more info on Spotify\'s API')))
                             ),
                             mainPanel(
@@ -46,4 +49,5 @@ shinyUI(fluidPage(
                         )
                ), text = HTML('<a href = "http://RCharlie.com" target = "_blank">RCharlie.com</a>')
     )
-))
+)
+}
