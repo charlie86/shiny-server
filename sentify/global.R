@@ -30,17 +30,6 @@ jscode <-
 '
 base_url <- 'https://api.spotify.com/v1/'
 
-famous_users <- list(
-    'Snoop Dogg' = 'snoopdogg',
-    'Barack Obama' = 'barackobama', 
-    'Jonny Greenwood' = 'mrmarmite',
-    'Trent Reznor' = 'treznor',
-    'Jamie xx' = 'jamiexx',
-    'Daft Punk' = 'daftpunkofficial',
-    'Kendrick Lamar' = 'kendricklamar',
-    'Ashton Kutcher' = 'aplusk'
-)
-
 neon_colors <- c(
     '#84DE02'
     , '#FF4466'

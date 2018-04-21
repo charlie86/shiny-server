@@ -14,12 +14,6 @@ shinyServer(function(input, output, session) {
         get_spotify_access_token()
     })
     
-    observe({
-        output$screenwidth <- renderText({
-            input$GetScreenWidth
-        })
-    })
-    
     artist_info <- reactive({
         req(input$artist_search)
         get_artists(input$artist_search, access_token = spotify_access_token())
@@ -64,10 +58,10 @@ shinyServer(function(input, output, session) {
         
         req(nrow(artist_info()) > 0)
         
-        artist_img <- ifelse(!is.na(artist_info()$artist_img[artist_info()$artist_name == input$select_artist]), artist_info()$artist_img[artist_info()$artist_name == input$select_artist], 'https://pbs.twimg.com/profile_images/509949472139669504/IQSh7By1_400x400.jpeg')
+        artist_img <- coalesce(artist_info()$artist_img[artist_info()$artist_name == input$select_artist], 'https://pbs.twimg.com/profile_images/509949472139669504/IQSh7By1_400x400.jpeg')
         
         output$artist_img <- renderText({
-            HTML(paste0('<img src=', artist_img, ' height="200">'))
+            HTML(str_glue('<img src={artist_img} height="200">'))
         })
         
         output$album_go_ui <- renderUI({
@@ -264,12 +258,10 @@ shinyServer(function(input, output, session) {
                     
                     if (input$playlist_autoplay == TRUE) {
                         
-                        playlist_track_hover <- input$playlist_quadrant_chart_mouseOver
-                        
                         track_preview_url <- track_df() %>% 
-                            filter(playlist_name == playlist_track_hover$series,
-                                   valence == playlist_track_hover$x,
-                                   energy == playlist_track_hover$y) %>% 
+                            filter(playlist_name == input$playlist_quadrant_chart_mouseOver$series,
+                                   valence == input$playlist_quadrant_chart_mouseOver$x,
+                                   energy == input$playlist_quadrant_chart_mouseOver$y) %>% 
                             pull(track_preview_url)
                         
                         if (!is.na(track_preview_url)) {
