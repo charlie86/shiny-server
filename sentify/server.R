@@ -60,7 +60,7 @@ shinyServer(function(input, output, session) {
             }
             
             ### "searching for albums..."
-            album_info <<- get_albums(artist_info$artist_uri[artist_info$artist_name == artist_name], access_token = spotify_access_token())
+            album_info <<- get_artist_albums(artist_uri = artist_info$artist_uri[artist_info$artist_name == artist_name], use_artist_uri = T, access_token = spotify_access_token())
             
             if (nrow(album_info) > 0) {
                 
