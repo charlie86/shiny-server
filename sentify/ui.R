@@ -6,7 +6,9 @@ function(request) {
     useShinyjs(),
     tags$script(jscode),
     tags$style(appCSS),
-    tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'style.css')),
+    tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'style.css'),
+              tags$head(includeScript('www/ga.js')),
+              tags$head(includeScript('www/hotjar.js'))),
     
     navbarPageWithText('Sentify', id = 'tabs',
                tabPanel('Artists',
